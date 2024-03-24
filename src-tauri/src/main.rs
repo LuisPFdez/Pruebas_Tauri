@@ -31,26 +31,16 @@ async fn abrir_nueva_ventana(handle: tauri::AppHandle, ruta: &str) -> Result<&st
     let r = ruta.parse::<PathBuf>()?;
 
     if r.components().any(|x| x.eq(&Component::ParentDir)) {
-        return Err(tauri::Error::PathNotAllowed(
-            "No se puede acceder a direcorios superiores".into(),
-        )
-        .into());
+        return Err(
+            tauri::Error::InvalidWindowUrl("No se puede acceder a direcorios superiores").into(),
+        );
     }
-    ruta_buf = PathBuf::from("view");
-    info!(
-        "Esto es una prueba : {}",
-        PathBuf::from("index.html").exists()
-    );
+    ruta_buf = PathBuf::from("../view");
 
     ruta_buf.push(r);
-    info!(
-        "Valor de ruta {}, existe {}",
-        ruta_buf.to_str().unwrap(),
-        ruta_buf.exists()
-    );
 
     if !ruta_buf.exists() {
-        return Err(tauri::Error::PathNotAllowed("Ruta incorrecta".into()).into());
+        return Err(tauri::Error::InvalidWindowUrl("Ruta incorrecta").into());
     }
 
     match handle.get_window("external") {
