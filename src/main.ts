@@ -53,13 +53,13 @@ async function greet() {
 
 async function pruebas() {
   await invoke("abrir_nueva_ventana", {
-    ruta: "inditex.html"
+    ruta: "inditex.html",
+    titulo: "Pruebas titulo"
   }).then((e) => {
     console.log("Correcto : ", e);
   }).catch((er) => {
     console.error("Error hola: ", er);
   });
-
 }
 
 window.onload = async function () {

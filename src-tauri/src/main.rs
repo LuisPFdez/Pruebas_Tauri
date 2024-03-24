@@ -25,9 +25,9 @@ fn crear_barra_de_menu() -> Menu {
 }
 
 #[tauri::command]
-async fn abrir_nueva_ventana(handle: tauri::AppHandle, ruta: &str) -> Result<&str, CustomError> {
+async fn abrir_nueva_ventana(handle: tauri::AppHandle, ruta: &str, titulo: &str) -> Result<&'static str, CustomError> {
     let mut ruta_buf: PathBuf;
-
+    
     let r = ruta.parse::<PathBuf>()?;
 
     if r.components().any(|x| x.eq(&Component::ParentDir)) {
@@ -35,6 +35,7 @@ async fn abrir_nueva_ventana(handle: tauri::AppHandle, ruta: &str) -> Result<&st
             tauri::Error::InvalidWindowUrl("No se puede acceder a direcorios superiores").into(),
         );
     }
+
     ruta_buf = PathBuf::from("../view");
 
     ruta_buf.push(r);
@@ -43,22 +44,22 @@ async fn abrir_nueva_ventana(handle: tauri::AppHandle, ruta: &str) -> Result<&st
         return Err(tauri::Error::InvalidWindowUrl("Ruta incorrecta").into());
     }
 
-    match handle.get_window("external") {
+    match handle.get_window("secundaria") {
         None => {
             let _docs_window = tauri::WindowBuilder::new(
                 &handle,
-                "external", /* the unique window label */
+                "secundaria", /* the unique window label */
                 tauri::WindowUrl::App(ruta_buf),
             )
             .menu(crear_barra_de_menu())
-            .title("Titulo de ventana")
+            .title(titulo)
             .center()
             .build()?;
             Ok("Ventana creada")
         }
         Some(ventana) => {
             ventana.set_focus()?;
-            Ok("La ventana ya existe, se ha hecho foco a esta")
+            Ok("La ventana ya existe")
         }
     }
 }
