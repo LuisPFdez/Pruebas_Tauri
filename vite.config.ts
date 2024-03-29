@@ -16,6 +16,8 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+  //Incluye svg de los tipos de pokemon
+  assetsInclude: "src/assets/pokemon-type-icons/icons/*",
   build: {
     rollupOptions: {
       input: {
