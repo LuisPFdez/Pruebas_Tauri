@@ -18,7 +18,11 @@
         "open": true
       },
       "dialog": {
-        "confirm": true
+        "confirm": true,
+        "message": true
+      },
+      "window":{
+        "close": true
       }
     },
     "windows": [

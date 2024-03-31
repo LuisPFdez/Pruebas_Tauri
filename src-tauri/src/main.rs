@@ -4,7 +4,7 @@
 mod errores;
 use errores::{CustomError, TauriError};
 
-use log::info;
+use log::{error, info};
 use std::path::PathBuf;
 use tauri::{CustomMenuItem, Manager, Menu, Submenu, WindowMenuEvent};
 use tauri_plugin_log::LogTarget;
@@ -22,6 +22,11 @@ fn crear_barra_de_menu() -> Menu {
             .add_item(recargar),
     );
     return Menu::new().add_submenu(archivo).add_item(salir);
+}
+
+#[tauri::command]
+fn es_desa() -> bool{
+    cfg!(debug_assertions)
 }
 
 #[tauri::command]
@@ -96,7 +101,7 @@ fn main() {
         .plugin(tauri_plugin_log::Builder::default().targets(target).build())
         .menu(crear_barra_de_menu())
         .on_menu_event(menu_handler)
-        .invoke_handler(tauri::generate_handler![abrir_nueva_ventana])
+        .invoke_handler(tauri::generate_handler![abrir_nueva_ventana, es_desa])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
