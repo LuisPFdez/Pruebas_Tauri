@@ -70,6 +70,16 @@ function fetchData<T>(url: URL | RequestInfo): Promise<T> {
   return fetch(url).then(data => data.json() as Promise<T>)
 }
 
+async function crearImagen(url: string, imagenHTML: HTMLImageElement) {
+  //TODO Revisar console time, para ajustarlo al sistema de logs de tauri 
+  console.time("imagen");
+  let datos = Array.from(new Uint8Array(await (await fetch(url)).arrayBuffer()));
+  let rgbImagen: number[] = await invoke("redimensionar_imagen", { imagen: datos });
+  let datoss = Int8Array.from(rgbImagen);
+  imagenHTML.src = URL.createObjectURL(new Blob([datoss.buffer], { type: 'image/png' }));
+  console.timeEnd("imagen");
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   let cuadro_busqueda = document.querySelector<HTMLInputElement>("#cuadro_busqueda");
 
@@ -107,10 +117,10 @@ window.addEventListener("DOMContentLoaded", () => {
             let area_pokemon = document.createElement("section");
             area_imagen?.appendChild(area_pokemon);
 
-            let imagen_pokemon = new Image(150, 150);
+            let imagen_pokemon = new Image(300, 300);
             let area_tipos = document.createElement("section");
 
-            imagen_pokemon.src = datos.sprites.front_default;
+            crearImagen(datos.sprites.front_default, imagen_pokemon);
 
             datos.types.forEach((tipo) => {
               const nombre_tipo = tipo.type.name;

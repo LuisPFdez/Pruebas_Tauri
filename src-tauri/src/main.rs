@@ -4,8 +4,9 @@
 mod errores;
 use errores::{CustomError, TauriError};
 
-use log::{error, info};
-use std::path::PathBuf;
+use image::ImageFormat;
+use log::info;
+use std::{io::Cursor, path::PathBuf};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu, WindowMenuEvent};
 use tauri_plugin_log::LogTarget;
 
@@ -25,8 +26,24 @@ fn crear_barra_de_menu() -> Menu {
 }
 
 #[tauri::command]
-fn es_desa() -> bool{
+fn es_desa() -> bool {
     cfg!(debug_assertions)
+}
+
+#[tauri::command]
+fn redimensionar_imagen(imagen: Vec<u8>) -> Vec<u8> {
+    let imagen_original = image::load_from_memory_with_format(&imagen, ImageFormat::Png).unwrap();
+    //TODO Buscar un algoritmo mejor. El algoritmo nearest neighbor mejora el resultado.
+    //Pero no es el optimo para las imagenes en pixel art como los sprites de pokemon
+    let imagen_redimensionada =
+        imagen_original.resize(300, 300, image::imageops::FilterType::Nearest);
+    let mut vector = Vec::<u8>::new();
+    let mut buff = Cursor::new(&mut vector);
+    imagen_redimensionada
+        .write_to(&mut buff, ImageFormat::Png)
+        .unwrap();
+
+    vector
 }
 
 #[tauri::command]
@@ -101,7 +118,11 @@ fn main() {
         .plugin(tauri_plugin_log::Builder::default().targets(target).build())
         .menu(crear_barra_de_menu())
         .on_menu_event(menu_handler)
-        .invoke_handler(tauri::generate_handler![abrir_nueva_ventana, es_desa])
+        .invoke_handler(tauri::generate_handler![
+            abrir_nueva_ventana,
+            es_desa,
+            redimensionar_imagen
+        ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
