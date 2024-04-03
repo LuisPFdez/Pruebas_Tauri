@@ -22,10 +22,18 @@ input {
   font-weight: 500;
   font-family: inherit;
   color: #0f0f0f;
-  background-color: #7013ad;
+  background-color: #ffffff;
   transition: border-color 0.25s;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
   outline: none;
+}
+
+img {
+  display: none;
+}
+
+img[src] {
+  display: block;
 }
 
 #greet-input {
@@ -77,6 +85,13 @@ input {
 
 .area_tipos {
   width: 150px;
+}
+
+.area_pokemon {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: center;
 }
 
 /*Colores de cada tipo*/

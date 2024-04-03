@@ -115,11 +115,16 @@ window.addEventListener("DOMContentLoaded", () => {
           fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
             let area_imagen = document.querySelector<HTMLDivElement>("#imagenes");
             let area_pokemon = document.createElement("section");
+            area_pokemon.classList.add("area_pokemon");
+            let section_imagen_pokemon = document.createElement("section");
             area_imagen?.appendChild(area_pokemon);
-
-            let imagen_pokemon = new Image(300, 300);
+            
+            let imagen_pokemon = new Image();
             let area_tipos = document.createElement("section");
+            section_imagen_pokemon.appendChild(imagen_pokemon);
 
+            section_imagen_pokemon.style.height = "300px";
+            section_imagen_pokemon.style.width = "300px";
             crearImagen(datos.sprites.front_default, imagen_pokemon);
 
             datos.types.forEach((tipo) => {
@@ -141,7 +146,7 @@ window.addEventListener("DOMContentLoaded", () => {
               div_tipo.appendChild(texto_tipo);
             });
 
-            area_pokemon?.appendChild(imagen_pokemon);
+            area_pokemon?.appendChild(section_imagen_pokemon);
             area_pokemon?.appendChild(area_tipos);
 
           });
