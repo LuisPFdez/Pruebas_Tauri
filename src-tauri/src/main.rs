@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod errores;
-use errores::{CustomError, TauriError};
+use errores::{CustomError, ErrorImagen, TauriError};
 
 use image::ImageFormat;
 use log::info;
@@ -31,19 +31,17 @@ fn es_desa() -> bool {
 }
 
 #[tauri::command]
-fn redimensionar_imagen(imagen: Vec<u8>) -> Vec<u8> {
-    let imagen_original = image::load_from_memory_with_format(&imagen, ImageFormat::Png).unwrap();
+fn redimensionar_imagen(imagen: Vec<u8>) -> Result<Vec<u8>, ErrorImagen> {
+    let imagen_original = image::load_from_memory_with_format(&imagen, ImageFormat::Png)?;
     //TODO Buscar un algoritmo mejor. El algoritmo nearest neighbor mejora el resultado.
     //Pero no es el optimo para las imagenes en pixel art como los sprites de pokemon
     let imagen_redimensionada =
         imagen_original.resize(300, 300, image::imageops::FilterType::Nearest);
     let mut vector = Vec::<u8>::new();
     let mut buff = Cursor::new(&mut vector);
-    imagen_redimensionada
-        .write_to(&mut buff, ImageFormat::Png)
-        .unwrap();
+    imagen_redimensionada.write_to(&mut buff, ImageFormat::Png)?;
 
-    vector
+    Ok(vector)
 }
 
 #[tauri::command]

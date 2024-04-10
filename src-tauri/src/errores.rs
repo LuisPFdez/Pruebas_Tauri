@@ -1,12 +1,16 @@
 use std::{convert::Infallible, string::ParseError};
 
+use image::ImageError;
 use log::kv::{ToValue, Value};
 
 pub(crate) struct TauriError(pub tauri::Error);
+
 pub(crate) enum CustomError {
     TauriError(tauri::Error),
     ParseError(ParseError),
 }
+
+pub(crate) struct ErrorImagen(pub ImageError);
 
 impl ToValue for TauriError {
     fn to_value(&self) -> log::kv::Value {
@@ -28,7 +32,6 @@ impl From<tauri::Error> for CustomError {
 
 impl From<Infallible> for CustomError {
     fn from(value: Infallible) -> Self {
-        println!("HOla {:?}", value);
         CustomError::ParseError(value)
     }
 }
@@ -42,5 +45,20 @@ impl serde::ser::Serialize for CustomError {
             CustomError::TauriError(error) => String::serialize(&error.to_string(), serializer),
             CustomError::ParseError(error) => String::serialize(&error.to_string(), serializer),
         }
+    }
+}
+
+impl From<ImageError> for ErrorImagen {
+    fn from(val: ImageError) -> Self {
+        Self(val)
+    }
+}
+
+impl serde::ser::Serialize for ErrorImagen {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serde::Serialize::serialize(&self.0.to_string(), serializer)
     }
 }
