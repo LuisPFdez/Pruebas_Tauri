@@ -4,6 +4,9 @@ import { ConfirmDialogOptions, confirm, message, MessageDialogOptions } from "@t
 import { trace, info, error, attachConsole } from "tauri-plugin-log-api";
 import { tipos_pokemon, traduccion_tipos } from "./assets/iconos";
 
+const ancho_sprite = 300;
+const alto_sprite = 300;
+
 let esDesa: boolean = false;
 
 //Funcion que de muestra para capturar los logs atraves de los eventos
@@ -67,14 +70,14 @@ window.onload = async function () {
 }
 
 function fetchData<T>(url: URL | RequestInfo): Promise<T> {
-  return fetch(url).then(data => data.json() as Promise<T>)
+  return fetch(url).then(data => data.json())
 }
 
 async function crearImagen(url: string, imagenHTML: HTMLImageElement) {
   //TODO Revisar console time, para ajustarlo al sistema de logs de tauri 
   console.time("imagen");
   let datos = Array.from(new Uint8Array(await (await fetch(url)).arrayBuffer()));
-  let rgbImagen: number[] = await invoke("redimensionar_imagen", { imagen: datos });
+  let rgbImagen: number[] = await invoke("redimensionar_imagen", { imagen: datos, ancho: ancho_sprite, alto: alto_sprite });
   let datoss = Int8Array.from(rgbImagen);
   imagenHTML.src = URL.createObjectURL(new Blob([datoss.buffer], { type: 'image/png' }));
   console.timeEnd("imagen");

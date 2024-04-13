@@ -10,6 +10,9 @@ use std::{io::Cursor, path::PathBuf};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu, WindowMenuEvent};
 use tauri_plugin_log::LogTarget;
 
+static NOMBRE_VENTANA_SPRITES: &'static str = "sprites";
+
+/// Funcion que crear y devuelve un menu por defecto,
 fn crear_barra_de_menu() -> Menu {
     let abrir = CustomMenuItem::new("abrir", "Abrir");
     let cerrar = CustomMenuItem::new("cerrar", "Cerrar");
@@ -22,6 +25,7 @@ fn crear_barra_de_menu() -> Menu {
             .add_item(cerrar)
             .add_item(recargar),
     );
+
     return Menu::new().add_submenu(archivo).add_item(salir);
 }
 
@@ -31,14 +35,16 @@ fn es_desa() -> bool {
 }
 
 #[tauri::command]
-fn redimensionar_imagen(imagen: Vec<u8>) -> Result<Vec<u8>, ErrorImagen> {
+fn redimensionar_imagen(imagen: Vec<u8>, ancho: u32, alto: u32) -> Result<Vec<u8>, ErrorImagen> {
+    let mut vector = Vec::<u8>::new();
     let imagen_original = image::load_from_memory_with_format(&imagen, ImageFormat::Png)?;
+    let mut buff = Cursor::new(&mut vector);
+
     //TODO Buscar un algoritmo mejor. El algoritmo nearest neighbor mejora el resultado.
     //Pero no es el optimo para las imagenes en pixel art como los sprites de pokemon
     let imagen_redimensionada =
-        imagen_original.resize(300, 300, image::imageops::FilterType::Nearest);
-    let mut vector = Vec::<u8>::new();
-    let mut buff = Cursor::new(&mut vector);
+        imagen_original.resize(ancho, alto, image::imageops::FilterType::Nearest);
+
     imagen_redimensionada.write_to(&mut buff, ImageFormat::Png)?;
 
     Ok(vector)
@@ -50,7 +56,7 @@ async fn abrir_nueva_ventana(
     ruta: &str,
     titulo: &str,
 ) -> Result<&'static str, CustomError> {
-    match handle.get_window("secundaria") {
+    match handle.get_window(NOMBRE_VENTANA_SPRITES) {
         None => {
             let mut ruta_buf: PathBuf;
 
@@ -64,23 +70,18 @@ async fn abrir_nueva_ventana(
                 return Err(tauri::Error::InvalidWindowUrl("Ruta incorrecta").into());
             }
 
-            let _ =
-                tauri::WindowBuilder::new(&handle, "secundaria", tauri::WindowUrl::App(ruta_buf))
-                    .menu(crear_barra_de_menu())
-                    .title(titulo)
-                    .center()
-                    .build()?;
+            let _ = tauri::WindowBuilder::new(
+                &handle,
+                NOMBRE_VENTANA_SPRITES,
+                tauri::WindowUrl::App(ruta_buf),
+            )
+            .title(titulo)
+            .center()
+            .build()?;
 
             Ok("Ventana creada")
         }
         Some(ventana) => {
-            let ruta = format!("/view/{ruta}");
-            if ventana.url().path() != ruta {
-                ventana.eval(
-                    "window.location.replace(new URL('/inditex.html', window.location.href))",
-                )?;
-            }
-
             ventana.set_focus()?;
             Ok("La ventana ya existe")
         }
