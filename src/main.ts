@@ -87,6 +87,10 @@ async function crearImagen(url: string, imagenHTML: HTMLImageElement) {
 window.addEventListener("DOMContentLoaded", () => {
   let cuadro_busqueda = document.querySelector<HTMLInputElement>("#cuadro_busqueda");
 
+  document.querySelector<HTMLButtonElement>("#boton_busqueda")?.addEventListener("click", () => {
+    cuadro_busqueda?.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
+  })
+
   cuadro_busqueda?.addEventListener("keyup", function () {
     this.value = this.value.toLowerCase();
   });
@@ -98,6 +102,8 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      document.querySelector("#imagenes")?.childNodes.forEach(cn => cn.remove());
+
       buscarPokemon(this.value);
     }
   });
@@ -105,8 +111,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 /**
  * Busca un pokemon en la api y recupera toda la informacion de este
- * @param pokemon 
- * @param esPrincipal 
+ * @param pokemon
  */
 function buscarPokemon(pokemon: string) {
   fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon}`)
