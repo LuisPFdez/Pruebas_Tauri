@@ -70,6 +70,47 @@ window.onload = async function () {
   }
 }
 
+function crearTarjetaPokemon (datosPokemon: Pokemon): HTMLElement {
+  let area_tarjeta = document.createElement("section");
+  let tarjeta = document.createElement("section");
+  let frontal = document.createElement("section");
+  let reverso = document.createElement("section");
+
+  area_tarjeta.appendChild(tarjeta);
+  tarjeta.appendChild(frontal);
+  tarjeta.appendChild(reverso);
+
+  area_tarjeta.classList.add("area_tarjeta");
+  tarjeta.classList.add("tarjeta");
+  frontal.classList.add("frontal");
+  reverso.classList.add("reverso");
+
+  let imagen = new Image();
+  let nombre = document.createElement("h2");
+  let area_imagen = document.createElement("section");
+  frontal.appendChild(area_imagen);
+  frontal.appendChild(nombre);
+  area_imagen.appendChild(imagen);
+
+  nombre.classList.add("nombre");
+  nombre.textContent = datosPokemon.name;
+  area_imagen.classList.add("imagen");
+  area_imagen.style.width = "300px";
+  area_imagen.style.height = "300px";
+  crearImagen(datosPokemon.sprites.front_default, imagen);
+
+  let nombre_reverso = document.createElement("h4");
+  let p = document.createElement("p");
+  reverso.appendChild(nombre_reverso);
+  reverso.appendChild(p);
+  
+  nombre_reverso.innerHTML = datosPokemon.name;
+  p.innerText = "Lorem" ;
+
+  return area_tarjeta;
+
+}
+
 function fetchData<T>(url: URL | RequestInfo): Promise<T> {
   return fetch(url).then(data => data.json())
 }
@@ -134,50 +175,52 @@ function buscarPokemon(pokemon: string) {
       let pokemon = datos.varieties[0].pokemon;
       fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
         let area_imagen = document.querySelector<HTMLDivElement>("#imagenes");
-        let area_pokemon = document.createElement("section");
-        area_pokemon.classList.add("area_pokemon");
-        let section_imagen_pokemon = document.createElement("section");
-        area_imagen?.appendChild(area_pokemon);
+        // let area_pokemon = document.createElement("section");
+        // area_pokemon.classList.add("area_pokemon");
+        // let section_imagen_pokemon = document.createElement("section");
+        // area_imagen?.appendChild(area_pokemon);
 
-        let imagen_pokemon = new Image();
-        imagen_pokemon.onclick = async () => {
-          await invoke("abrir_nueva_ventana", {
-            ruta: "sprites.html",
-            titulo: `Sprites de ${capitalizarPrimeraLetra(datos.name)} Macho/Hembra`
-          }).then(() => {
-            invoke("pruebas");
-          }
-          );
-        };
+        // let imagen_pokemon = new Image();
+        // imagen_pokemon.onclick = async () => {
+        //   await invoke("abrir_nueva_ventana", {
+        //     ruta: "sprites.html",
+        //     titulo: `Sprites de ${capitalizarPrimeraLetra(datos.name)} Macho/Hembra`
+        //   }).then(() => {
+        //     invoke("pruebas");
+        //   }
+        //   );
+        // };
+        let cartaPokemon = crearTarjetaPokemon(datos);
+        area_imagen?.appendChild(cartaPokemon);
 
-        let area_tipos = document.createElement("section");
-        section_imagen_pokemon.appendChild(imagen_pokemon);
+        // let area_tipos = document.createElement("section");
+        // section_imagen_pokemon.appendChild(imagen_pokemon);
 
-        section_imagen_pokemon.style.height = "300px";
-        section_imagen_pokemon.style.width = "300px";
-        crearImagen(datos.sprites.front_default, imagen_pokemon);
+        // section_imagen_pokemon.style.height = "300px";
+        // section_imagen_pokemon.style.width = "300px";
+        // crearImagen(datos.sprites.front_default, imagen_pokemon);
 
-        datos.types.forEach((tipo) => {
-          const nombre_tipo = tipo.type.name;
+        // datos.types.forEach((tipo) => {
+        //   const nombre_tipo = tipo.type.name;
 
-          let div_tipo = document.createElement("div");
-          let imagen_tipo = new Image(45, 45);
-          let texto_tipo = document.createElement("span");
+        //   let div_tipo = document.createElement("div");
+        //   let imagen_tipo = new Image(45, 45);
+        //   let texto_tipo = document.createElement("span");
 
-          area_tipos.appendChild(div_tipo).appendChild(imagen_tipo);
-          area_tipos.classList.add("area_tipos");
+        //   area_tipos.appendChild(div_tipo).appendChild(imagen_tipo);
+        //   area_tipos.classList.add("area_tipos");
 
-          imagen_tipo.src = tipos_pokemon[nombre_tipo];
-          imagen_tipo.alt = `Tipo ${traduccion_tipos[nombre_tipo]}`;
+        //   imagen_tipo.src = tipos_pokemon[nombre_tipo];
+        //   imagen_tipo.alt = `Tipo ${traduccion_tipos[nombre_tipo]}`;
 
-          div_tipo.classList.add(nombre_tipo, "tipos");
-          texto_tipo.innerText = traduccion_tipos[nombre_tipo];
+        //   div_tipo.classList.add(nombre_tipo, "tipos");
+        //   texto_tipo.innerText = traduccion_tipos[nombre_tipo];
 
-          div_tipo.appendChild(texto_tipo);
-        });
+        //   div_tipo.appendChild(texto_tipo);
+        // });
 
-        area_pokemon?.appendChild(section_imagen_pokemon);
-        area_pokemon?.appendChild(area_tipos);
+        // area_pokemon?.appendChild(section_imagen_pokemon);
+        // area_pokemon?.appendChild(area_tipos);
 
       });
     })

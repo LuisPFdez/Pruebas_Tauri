@@ -95,6 +95,10 @@ input {
   transition-delay: 0s, 0.25s, 0s;
 }
 
+#imagenes {
+  margin-top: 15px;
+}
+
 img {
   display: none;
 }
@@ -105,6 +109,70 @@ img[src] {
 
 #greet-input {
   margin-right: 5px;
+}
+
+/*Estilos tarjeta pokemon*/
+
+.area_tarjeta,
+.tarjeta {
+  height: 400px;
+  width: 350px;
+}
+
+
+.tarjeta {
+  position: relative;
+  border: 2px solid black;
+
+  transition: transform 1s linear;
+  transform-style: preserve-3d;
+  border-radius: 25px;
+}
+
+.frontal,
+.reverso {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+
+  background-color: rgba(34, 34, 34, 0.671);
+  backface-visibility: hidden;
+  border-radius: 25px;
+}
+
+.frontal {
+  z-index: 2;
+}
+
+.frontal .imagen {
+  height: 300px;
+  width: 300px;
+  margin: 25px 25px 0;
+}
+
+.reverso {
+  transform: rotateY(180deg);
+}
+
+.reverso h3 {
+  font-variant: small-caps;
+  font-size: xx-large;
+
+  text-align: center;
+}
+
+.nombre {
+  margin-top: 15px;
+  color: white;
+  text-align: center;
+
+  text-transform: capitalize;
+}
+
+.area_tarjeta:hover .tarjeta {
+  transition: transform 1s linear;
+  transform: rotateY(180deg);
 }
 
 @media (prefers-color-scheme: dark) {
