@@ -138,7 +138,8 @@ img[src] {
 
   background-color: rgba(34, 34, 34, 0.671);
   backface-visibility: hidden;
-  border-radius: 25px;
+  border-radius: 20px;
+  color: white;
 }
 
 .frontal {
@@ -157,17 +158,37 @@ img[src] {
 
 .reverso h3 {
   font-variant: small-caps;
-  font-size: xx-large;
 
   text-align: center;
 }
 
 .nombre {
   margin-top: 15px;
-  color: white;
   text-align: center;
 
   text-transform: capitalize;
+}
+
+.tipo {
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; 
+  border-radius: 50px;
+  margin-bottom: 15px; 
+  width: 150px;
+}
+
+.area_tipos {
+  display: inline-block;
+  width: 100%;
+}
+
+.boton_click {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
 }
 
 .area_tarjeta:hover .tarjeta {
@@ -209,20 +230,6 @@ img[src] {
     -webkit-text-fill-color: #ffffff;
     -webkit-box-shadow: 0 0 0 40px #0f0f0fe7 inset !important;
   }
-}
-
-.tipos {
-  padding: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  border-radius: 50px;
-  margin-bottom: 15px;
-}
-
-.area_tipos {
-  width: 150px;
 }
 
 .area_pokemon {

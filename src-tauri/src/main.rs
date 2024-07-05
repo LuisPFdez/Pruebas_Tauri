@@ -54,7 +54,7 @@ fn redimensionar_imagen(imagen: Vec<u8>, ancho: u32, alto: u32) -> Result<Vec<u8
 async fn abrir_nueva_ventana(
     handle: tauri::AppHandle,
     ruta: &str,
-    titulo: &str,
+    titulo: Option<&str>,
 ) -> Result<&'static str, CustomError> {
     match handle.get_window(NOMBRE_VENTANA_SPRITES) {
         None => {
@@ -75,7 +75,7 @@ async fn abrir_nueva_ventana(
                 NOMBRE_VENTANA_SPRITES,
                 tauri::WindowUrl::App(ruta_buf),
             )
-            .title(titulo)
+            .title(titulo.unwrap_or("Tauri"))
             .center()
             .build()?;
 
