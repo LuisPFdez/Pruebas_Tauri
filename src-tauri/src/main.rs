@@ -2,15 +2,17 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod errores;
+mod propiedades;
 use errores::{CustomError, ErrorImagen, TauriError};
+use propiedades::PropiedadesVentana;
 
 use image::ImageFormat;
-use log::info;
+use log::{error, info};
 use std::{io::Cursor, path::PathBuf};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu, WindowMenuEvent};
 use tauri_plugin_log::LogTarget;
 
-static NOMBRE_VENTANA_SPRITES: &'static str = "sprites";
+static NOMBRE_VENTANA_SECUNDARIA: &'static str = "vent_sec";
 
 /// Funcion que crear y devuelve un menu por defecto,
 fn crear_barra_de_menu() -> Menu {
@@ -56,11 +58,11 @@ async fn abrir_nueva_ventana(
     ruta: &str,
     titulo: Option<&str>,
 ) -> Result<&'static str, CustomError> {
-    match handle.get_window(NOMBRE_VENTANA_SPRITES) {
+    match handle.get_window(NOMBRE_VENTANA_SECUNDARIA) {
         None => {
             let mut ruta_buf: PathBuf;
-
-            let r = ruta.parse::<PathBuf>()?;
+            let ruta_vista = format!("{ruta}.html");
+            let r = ruta_vista.parse::<PathBuf>()?;
 
             ruta_buf = PathBuf::from("../view");
 
@@ -70,12 +72,27 @@ async fn abrir_nueva_ventana(
                 return Err(tauri::Error::InvalidWindowUrl("Ruta incorrecta").into());
             }
 
+            let propiedades: PropiedadesVentana;
+            match PropiedadesVentana::cargar_propiedades(
+                format!("../view/{ruta}.properties").as_str(),
+            ) {
+                Ok(prop) => propiedades = prop,
+                Err(err) => {
+                    error!("Error al cargar el archivo de propiedades. Error: {}", err);
+                    propiedades = PropiedadesVentana::new();
+                }
+            };
+
             let _ = tauri::WindowBuilder::new(
                 &handle,
-                NOMBRE_VENTANA_SPRITES,
+                NOMBRE_VENTANA_SECUNDARIA,
                 tauri::WindowUrl::App(ruta_buf),
             )
-            .title(titulo.unwrap_or("Tauri"))
+            .title(propiedades.titulo.unwrap_or("Tauri".to_string()).as_str())
+            .inner_size(
+                propiedades.ancho.unwrap_or(800f64),
+                propiedades.alto.unwrap_or(600f64),
+            )
             .center()
             .build()?;
 
