@@ -4,15 +4,19 @@
 mod errores;
 mod propiedades;
 use errores::{CustomError, ErrorImagen, TauriError};
-use propiedades::PropiedadesVentana;
+use propiedades::{PropiedadesPredeterminadas, PropiedadesVentana};
 
 use image::ImageFormat;
 use log::{error, info};
-use std::{io::Cursor, path::PathBuf};
+use std::{borrow::Borrow, io::Cursor, path::PathBuf};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu, WindowMenuEvent};
 use tauri_plugin_log::LogTarget;
 
 static NOMBRE_VENTANA_SECUNDARIA: &'static str = "vent_sec";
+
+thread_local! {
+    static PROPIEDADES_VENTANA: PropiedadesPredeterminadas = PropiedadesPredeterminadas::cargar_propiedades("../view/config.toml").expect("Fallo al cargar la configuración");
+}
 
 /// Funcion que crear y devuelve un menu por defecto,
 fn crear_barra_de_menu() -> Menu {
@@ -72,27 +76,28 @@ async fn abrir_nueva_ventana(
                 return Err(tauri::Error::InvalidWindowUrl("Ruta incorrecta").into());
             }
 
-            let propiedades: PropiedadesVentana;
-            match PropiedadesVentana::cargar_propiedades(
-                format!("../view/{ruta}.properties").as_str(),
-            ) {
-                Ok(prop) => propiedades = prop,
-                Err(err) => {
-                    error!("Error al cargar el archivo de propiedades. Error: {}", err);
-                    propiedades = PropiedadesVentana::new();
+            let propiedades = PROPIEDADES_VENTANA.with(|props| {
+                if let Some(prop) = &props.props_ventanas {
+                    if let Some(prop) = prop.get(ruta) {
+                        return prop.convertir_a_predeterminada(props);
+                    }
                 }
-            };
+
+                let prop = PropiedadesVentana::new();
+                prop.convertir_a_predeterminada(props)
+            });
 
             let _ = tauri::WindowBuilder::new(
                 &handle,
                 NOMBRE_VENTANA_SECUNDARIA,
                 tauri::WindowUrl::App(ruta_buf),
             )
-            .title(propiedades.titulo.unwrap_or("Tauri".to_string()).as_str())
+            .title(propiedades.titulo)
             .inner_size(
-                propiedades.ancho.unwrap_or(800f64),
-                propiedades.alto.unwrap_or(600f64),
+                propiedades.ancho,
+                propiedades.alto,
             )
+            .resizable(propiedades.redimensionable)
             .center()
             .build()?;
 
@@ -129,6 +134,11 @@ fn main() {
     let target: [LogTarget; 2] = [LogTarget::Stdout, LogTarget::Webview];
     #[cfg(not(debug_assertions))]
     let target: [LogTarget; 1] = [LogTarget::LogDir];
+
+    //Las propiedades son globales, pero con thread_local, se cargaran la primera vez que se llame,
+    // esto simplemente fuerza que se inicialize en el main,
+    // por lo que si hay algun problema al cargar el log, este se mostrara nada mas cargar la APP
+    PROPIEDADES_VENTANA.with(|_| {});
 
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().targets(target).build())

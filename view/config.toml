@@ -1,0 +1,9 @@
+alto=600
+ancho=800
+titulo="Pruebas titulo"
+redimensionable=true
+[sprites]
+titulo="Titulo sobre escrito"
+alto=200
+ancho=200
+redimensionable=false
