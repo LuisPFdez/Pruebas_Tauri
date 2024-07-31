@@ -11,6 +11,7 @@ pub(crate) struct PropiedadesVentana {
     pub ancho: Option<f64>,
     pub alto: Option<f64>,
     pub redimensionable: Option<bool>,
+    pub decoraciones: Option<bool>
 }
 
 pub(crate) struct PropiedadesPredeterminadas {
@@ -18,6 +19,7 @@ pub(crate) struct PropiedadesPredeterminadas {
     pub ancho: f64,
     pub alto: f64,
     pub redimensionable: bool,
+    pub decoraciones: bool,
     pub props_ventanas: Option<HashMap<String, PropiedadesVentana>>,
 }
 
@@ -26,12 +28,12 @@ impl<'de> Deserialize<'de> for PropiedadesPredeterminadas {
     where
         D: serde::Deserializer<'de>,
     {
-        #[derive(Debug)]
         enum Propiedades {
             Titulo,
             Alto,
             Ancho,
             Redimensionable,
+            Decoraciones,
             ID(String),
         }
 
@@ -46,7 +48,9 @@ impl<'de> Deserialize<'de> for PropiedadesPredeterminadas {
                     type Value = Propiedades;
 
                     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                        formatter.write_str("Titulo, Alto, Ancho, Redimensionable, ID de ventana")
+                        formatter.write_str(
+                            "Titulo, Alto, Ancho, Redimensionable, Decoraciones, ID de ventana",
+                        )
                     }
 
                     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
@@ -58,6 +62,7 @@ impl<'de> Deserialize<'de> for PropiedadesPredeterminadas {
                             "alto" => Ok(Propiedades::Alto),
                             "ancho" => Ok(Propiedades::Ancho),
                             "redimensionable" => Ok(Propiedades::Redimensionable),
+                            "decoraciones" => Ok(Propiedades::Decoraciones),
                             _ => Ok(Propiedades::ID(v.to_owned())),
                         }
                     }
@@ -72,7 +77,7 @@ impl<'de> Deserialize<'de> for PropiedadesPredeterminadas {
             type Value = PropiedadesPredeterminadas;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("struct PropiedadesDefecto")
+                formatter.write_str("struct PropiedadesPredeterminadas")
             }
 
             fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
@@ -83,6 +88,7 @@ impl<'de> Deserialize<'de> for PropiedadesPredeterminadas {
                 let mut alto: Option<f64> = None;
                 let mut ancho: Option<f64> = None;
                 let mut redimensionable: Option<bool> = None;
+                let mut decoraciones: Option<bool> = None;
                 let mut props_ventanas: Option<HashMap<String, PropiedadesVentana>> = None;
 
                 while let Some(llave) = map.next_key()? {
@@ -91,6 +97,7 @@ impl<'de> Deserialize<'de> for PropiedadesPredeterminadas {
                         Propiedades::Alto => alto = Some(map.next_value()?),
                         Propiedades::Ancho => ancho = Some(map.next_value()?),
                         Propiedades::Redimensionable => redimensionable = Some(map.next_value()?),
+                        Propiedades::Decoraciones => decoraciones = Some(map.next_value()?),
                         Propiedades::ID(id) => {
                             let valor = map.next_value::<PropiedadesVentana>();
                             match valor {
@@ -120,13 +127,15 @@ impl<'de> Deserialize<'de> for PropiedadesPredeterminadas {
                     ancho: ancho.ok_or_else(|| de::Error::missing_field("ancho"))?,
                     redimensionable: redimensionable
                         .ok_or_else(|| de::Error::missing_field("redimensionable"))?,
+                    decoraciones: decoraciones
+                        .ok_or_else(|| de::Error::missing_field("decoraciones"))?,
                     props_ventanas,
                 })
             }
         }
 
-        const FIELDS: &[&str; 4] = &["titulo", "alto", "ancho", "posicion"];
-        deserializer.deserialize_struct("PropiedadesVentana", FIELDS, PropiedadesVisitor)
+        const FIELDS: &[&str; 5] = &["titulo", "alto", "ancho", "redimensionable", "dimensiones"];
+        deserializer.deserialize_struct("PropiedadesPredeterminadas", FIELDS, PropiedadesVisitor)
     }
 }
 
@@ -137,11 +146,10 @@ impl PropiedadesVentana {
             ancho: None,
             alto: None,
             redimensionable: None,
+            decoraciones: None
         }
     }
 
-    /*
-     */
     pub fn convertir_a_predeterminada(
         &self,
         props: &PropiedadesPredeterminadas,
@@ -154,22 +162,13 @@ impl PropiedadesVentana {
             ancho: self.ancho.unwrap_or(props.ancho),
             alto: self.alto.unwrap_or(props.alto),
             redimensionable: self.redimensionable.unwrap_or(props.redimensionable),
+            decoraciones: self.decoraciones.unwrap_or(props.decoraciones),
             props_ventanas: None,
         }
     }
 }
 
 impl PropiedadesPredeterminadas {
-    pub fn new() -> Self {
-        PropiedadesPredeterminadas {
-            titulo: "".to_owned(),
-            ancho: 0.0,
-            alto: 0.0,
-            redimensionable: false,
-            props_ventanas: None,
-        }
-    }
-
     pub fn cargar_propiedades(ruta_archivo: &str) -> Result<Self, String> {
         let ruta = Path::new(ruta_archivo);
         if !ruta.exists() || !ruta.is_file() {

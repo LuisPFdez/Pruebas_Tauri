@@ -1,9 +1,13 @@
 alto=600
 ancho=800
-titulo="Pruebas titulo"
+titulo="Pruebas Tauri"
 redimensionable=true
+decoraciones=true
+datos=2
+posicion=[1, 1]
 [sprites]
-titulo="Titulo sobre escrito"
-alto=200
-ancho=200
+
+
+[reproductor]
 redimensionable=false
+decoraciones=false
