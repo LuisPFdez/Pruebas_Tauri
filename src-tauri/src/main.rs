@@ -41,6 +41,11 @@ fn es_desa() -> bool {
 }
 
 #[tauri::command]
+fn prefijo_ventana() -> &'static str {
+    NOMBRE_VENTANA_SECUNDARIA
+}
+
+#[tauri::command]
 fn redimensionar_imagen(imagen: Vec<u8>, ancho: u32, alto: u32) -> Result<Vec<u8>, ErrorImagen> {
     let mut vector = Vec::<u8>::new();
     let imagen_original = image::load_from_memory_with_format(&imagen, ImageFormat::Png)?;
