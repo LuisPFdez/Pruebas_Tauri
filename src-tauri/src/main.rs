@@ -1,14 +1,16 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[macro_use]
+mod imagenes;
 mod errores;
 mod propiedades;
-use errores::{CustomError, ErrorImagen, TauriError};
+use errores::{CustomError, TauriError};
+use imagenes::redimensionar_imagen;
 use propiedades::{PropiedadesPredeterminadas, PropiedadesVentana};
 
-use image::ImageFormat;
 use log::info;
-use std::{io::Cursor, path::PathBuf, sync::OnceLock};
+use std::{path::PathBuf, sync::OnceLock};
 use tauri::{CustomMenuItem, Manager, Menu, Submenu, WindowMenuEvent};
 use tauri_plugin_log::LogTarget;
 
@@ -43,38 +45,22 @@ fn prefijo_ventana() -> &'static str {
 }
 
 #[tauri::command]
-fn redimensionar_imagen(imagen: Vec<u8>, ancho: u32, alto: u32) -> Result<Vec<u8>, ErrorImagen> {
-    let mut vector = Vec::<u8>::new();
-    let imagen_original = image::load_from_memory_with_format(&imagen, ImageFormat::Png)?;
-    let mut buff = Cursor::new(&mut vector);
-
-    //TODO Buscar un algoritmo mejor. El algoritmo nearest neighbor mejora el resultado.
-    //Pero no es el optimo para las imagenes en pixel art como los sprites de pokemon
-    let imagen_redimensionada =
-        imagen_original.resize(ancho, alto, image::imageops::FilterType::Nearest);
-
-    imagen_redimensionada.write_to(&mut buff, ImageFormat::Png)?;
-
-    Ok(vector)
-}
-
-#[tauri::command]
 async fn abrir_nueva_ventana(
     handle: tauri::AppHandle,
     ventana: &str,
     titulo: Option<&str>,
 ) -> Result<(&'static str, bool), CustomError> {
     let nombre_ventana = format!("{}{}", NOMBRE_VENTANA_SECUNDARIA, ventana);
-    
+
     match handle.get_window(nombre_ventana.as_str()) {
         None => {
             let mut ruta_buf: PathBuf;
-            let nombre_ventana = format!("{ventana}.html");
-            let r = nombre_ventana.parse::<PathBuf>()?;
+            let vent = format!("{ventana}.html");
+            let ruta = vent.parse::<PathBuf>()?;
 
             ruta_buf = PathBuf::from("../view");
 
-            ruta_buf.push(r);
+            ruta_buf.push(ruta);
 
             if !ruta_buf.exists() {
                 return Err(tauri::Error::InvalidWindowUrl("Ruta incorrecta").into());
