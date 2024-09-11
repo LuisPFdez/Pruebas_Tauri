@@ -62,3 +62,53 @@ impl serde::ser::Serialize for ErrorImagen {
         serde::Serialize::serialize(&self.0.to_string(), serializer)
     }
 }
+
+#[cfg(feature = "paleta-imagen")]
+pub(crate) mod error_paleta_imagen {
+    use image::ImageError;
+    use linfa_clustering::KMeansError;
+    use ndarray::ShapeError;
+
+    pub(crate) enum ErrorGenerarPaleta {
+        ErrorImagen(ImageError),
+        KMeansError(KMeansError),
+        ShapeError(ShapeError),
+    }
+
+    impl From<ImageError> for ErrorGenerarPaleta {
+        fn from(value: ImageError) -> Self {
+            ErrorGenerarPaleta::ErrorImagen(value)
+        }
+    }
+
+    impl From<KMeansError> for ErrorGenerarPaleta {
+        fn from(value: KMeansError) -> Self {
+            ErrorGenerarPaleta::KMeansError(value)
+        }
+    }
+
+    impl From<ShapeError> for ErrorGenerarPaleta {
+        fn from(value: ShapeError) -> Self {
+            ErrorGenerarPaleta::ShapeError(value)
+        }
+    }
+
+    impl serde::ser::Serialize for ErrorGenerarPaleta {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            match self {
+                ErrorGenerarPaleta::ErrorImagen(error) => {
+                    String::serialize(&error.to_string(), serializer)
+                }
+                ErrorGenerarPaleta::KMeansError(error) => {
+                    String::serialize(&error.to_string(), serializer)
+                }
+                ErrorGenerarPaleta::ShapeError(error) => {
+                    String::serialize(&error.to_string(), serializer)
+                }
+            }
+        }
+    }
+}

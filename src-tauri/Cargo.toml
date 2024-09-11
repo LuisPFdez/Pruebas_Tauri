@@ -11,14 +11,24 @@ edition = "2021"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "dialog-message", "window-close", "dialog-confirm", "shell-open"] }
+tauri = { version = "1", features = [
+    "dialog-message",
+    "window-close",
+    "dialog-confirm",
+    "shell-open",
+] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.8"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 log = { version = "0.4" }
 image = "0.25"
+rand = { version = "0.8.5", optional = true }
+linfa = { version = "0.7.0", optional = true }
+linfa-clustering = { version = "0.7.0", optional = true }
+ndarray = { version = "0.15.6", optional = true }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+paleta-imagen = ["dep:rand", "dep:linfa", "dep:linfa-clustering", "dep:ndarray"]
