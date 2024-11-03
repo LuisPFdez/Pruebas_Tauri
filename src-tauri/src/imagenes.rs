@@ -1,4 +1,3 @@
-#[cfg(feature = "paleta-imagen")]
 use crate::errores::error_paleta_imagen::ErrorGenerarPaleta;
 use crate::errores::ErrorImagen;
 use image::ImageFormat;
@@ -22,7 +21,6 @@ pub(crate) fn redimensionar_imagen(
     Ok(vector)
 }
 
-#[cfg(feature = "paleta-imagen")]
 #[tauri::command]
 pub(crate) fn generar_paleta_imagen(imagen: Vec<u8>) -> Result<Vec<[u8; 3]>, ErrorGenerarPaleta> {
     use image::{GenericImageView, Rgba};

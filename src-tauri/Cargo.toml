@@ -23,12 +23,11 @@ toml = "0.8"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 log = { version = "0.4" }
 image = "0.25"
-rand = { version = "0.8.5", optional = true }
-linfa = { version = "0.7.0", optional = true }
-linfa-clustering = { version = "0.7.0", optional = true }
-ndarray = { version = "0.15.6", optional = true }
+rand = { version = "0.8.5" }
+linfa = { version = "0.7.0" }
+linfa-clustering = { version = "0.7.0" }
+ndarray = { version = "0.15.6" }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
-paleta-imagen = ["dep:rand", "dep:linfa", "dep:linfa-clustering", "dep:ndarray"]
