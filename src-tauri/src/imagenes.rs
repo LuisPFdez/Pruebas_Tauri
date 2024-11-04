@@ -1,6 +1,8 @@
 use crate::errores::error_paleta_imagen::ErrorGenerarPaleta;
 use crate::errores::ErrorImagen;
+use crate::utils::vec_to_string;
 use image::ImageFormat;
+use log::info;
 use std::io::Cursor;
 
 #[tauri::command]
@@ -22,7 +24,7 @@ pub(crate) fn redimensionar_imagen(
 }
 
 #[tauri::command]
-pub(crate) fn generar_paleta_imagen(imagen: Vec<u8>) -> Result<Vec<[u8; 3]>, ErrorGenerarPaleta> {
+pub(crate) fn generar_paleta_imagen(imagen: Vec<u8>, tamanyo: usize) -> Result<Vec<[u8; 3]>, ErrorGenerarPaleta> {
     use image::{GenericImageView, Rgba};
     use linfa::{traits::Fit, Dataset};
     use linfa_clustering::KMeans;
@@ -47,7 +49,7 @@ pub(crate) fn generar_paleta_imagen(imagen: Vec<u8>) -> Result<Vec<[u8; 3]>, Err
         .collect();
 
     let dataset = Dataset::from(Array2::from_shape_vec((valores.len() / 3, 3), valores)?);
-    let model = KMeans::params_with_rng(6, thread_rng())
+    let model = KMeans::params_with_rng(tamanyo, thread_rng())
         .max_n_iterations(20)
         .tolerance(1e-5)
         .fit(&dataset)?;
@@ -58,6 +60,8 @@ pub(crate) fn generar_paleta_imagen(imagen: Vec<u8>) -> Result<Vec<[u8; 3]>, Err
         .outer_iter()
         .map(|d| [d[0].trunc() as u8, d[1].trunc() as u8, d[2].trunc() as u8])
         .collect();
+
+    info!("Valor de retorno - {}", vec_to_string(&valor_retorno));
 
     Ok(valor_retorno)
 }

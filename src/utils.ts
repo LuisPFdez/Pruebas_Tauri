@@ -1,8 +1,9 @@
 import { invoke } from "@tauri-apps/api";
 import { emit, listen, Event } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/window";
-import { estadoVentana } from "./interfaces/tipos";
+import { estadoVentana, rgbArray } from "./interfaces/tipos";
 import { ErrorVentana } from "./errors/ErrorVentana";
+import { info } from "tauri-plugin-log-api";
 
 function capitalizarPrimeraLetra(texto: string): string {
     return `${texto.charAt(0).toLocaleUpperCase()}${texto.slice(1)}`
@@ -27,35 +28,36 @@ function enviarDatosVentana(propiedades: { ventana: string, titulo?: string }, d
     invoke("abrir_nueva_ventana", propiedades).then(async (estado) => {
         let [_, ventanaCreada] = estado as estadoVentana;
         const window = WebviewWindow.getByLabel(await obtenerLabelVentana(propiedades.ventana));
-        console.log("Enviar Datos, antes de evento", window, ventanaCreada)
         if (ventanaCreada) {
-
-
             window?.listen("ventana_cargada", _ => {
-                console.log("Enviar datos, escuchando evento", window)
                 window.emit("datos_ventana", datos);
             });
         } else {
             window?.emit("datos_ventana", datos);
         }
     }).catch((estado) => {
-        let [mensaje, _] = estado as estadoVentana;
+        let mensaje = estado as string;
         throw new ErrorVentana(mensaje);
     });
 
 }
 
 function eventoVentanaCargada<T>(callback: (evento: Event<T>) => void) {
-    console.log("Entra en la funcion de evento")
-
     listen("datos_ventana", (e: Event<T>) => {
-        console.log("Recibir datos, escuchando evento")
         callback(e)
     });
 
-    emit("ventana_cargada").then(() => {
-        console.log("Recibir datos, emitir evento");
-    });
+    emit("ventana_cargada");
 }
 
-export { capitalizarPrimeraLetra, ejecutarFuncionAlCargarDoc, obtenerLabelVentana, enviarDatosVentana, eventoVentanaCargada };
+function rgbAHexadecimal(rgb: rgbArray): string {
+    return "#".concat(rgb[0].toString(16), rgb[1].toString(16), rgb[2].toString(16));
+}
+
+function eliminarContenido(nodos: Node) {
+   while(nodos.firstChild){
+        nodos.firstChild.remove();
+   }
+}
+
+export { capitalizarPrimeraLetra, ejecutarFuncionAlCargarDoc, obtenerLabelVentana, enviarDatosVentana, eventoVentanaCargada, rgbAHexadecimal, eliminarContenido };

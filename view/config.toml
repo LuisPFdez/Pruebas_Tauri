@@ -11,3 +11,7 @@ posicion=[1, 1]
 [reproductor]
 redimensionable=false
 decoraciones=false
+
+[paleta]
+alto=400
+ancho=400

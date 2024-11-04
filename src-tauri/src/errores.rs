@@ -63,7 +63,6 @@ impl serde::ser::Serialize for ErrorImagen {
     }
 }
 
-#[cfg(feature = "paleta-imagen")]
 pub(crate) mod error_paleta_imagen {
     use image::ImageError;
     use linfa_clustering::KMeansError;

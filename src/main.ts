@@ -106,6 +106,11 @@ function crearTarjetaPokemon(datosPokemon: Pokemon, descripcion: Array<FlavorTex
   reverso.appendChild(info_pokemon);
   reverso.appendChild(seccion_tipos);
   reverso.appendChild(crearBotonGrito(datosPokemon.cries));
+  crearBotonPaleta(datosPokemon.sprites.front_default, datosPokemon.name).then((boton) => {
+    reverso.appendChild(boton);
+  }).catch((e) => {
+    error(`Error al generar la paleta de colores ${e}`);
+  })
 
   nombre_reverso.innerText = datosPokemon.name;
   info_pokemon.innerText = descripcion.find((text) => text.language.name == "es")?.flavor_text || "";
@@ -137,10 +142,14 @@ function fetchData<T>(url: URL | RequestInfo): Promise<T> {
   return fetch(url).then(data => data.json())
 }
 
+async function arrayFromURL(url: URL | RequestInfo): Promise<Array<number>> {
+  return Array.from(new Uint8Array(await ((await fetch(url)).arrayBuffer())));
+}
+
 async function crearImagen(url: string, imagenHTML: HTMLImageElement) {
   //TODO Revisar console time, para ajustarlo al sistema de logs de tauri 
   console.time("imagen");
-  let datos = Array.from(new Uint8Array(await (await fetch(url)).arrayBuffer()));
+  let datos = await arrayFromURL(url);
   let rgbImagen: number[] = await invoke("redimensionar_imagen", { imagen: datos, ancho: ancho_sprite, alto: alto_sprite });
   let datoss = Int8Array.from(rgbImagen);
   imagenHTML.src = URL.createObjectURL(new Blob([datoss.buffer], { type: 'image/png' }));
@@ -165,7 +174,10 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      document.querySelector("#imagenes")?.childNodes.forEach(cn => cn.remove());
+      let imagenes = document.querySelector("#imagenes")
+      if (imagenes) {
+        eliminarContenido(imagenes);
+      }
 
       buscarPokemon(this.value);
     }
@@ -182,6 +194,19 @@ function crearBotonGrito(gritosPokemon: PokemonCries): HTMLButtonElement {
   }
 
   return botonReproducir;
+}
+
+async function crearBotonPaleta(url: string, nombrePokemon: string): Promise<HTMLButtonElement> {
+  let arrayImagen = await arrayFromURL(url);
+  let paletaColores: paletaColoresType = await invoke("generar_paleta_imagen", { imagen: arrayImagen, tamanyo: 5 });
+  let botonPaleta = document.createElement("button");
+  botonPaleta.innerHTML = "P";
+
+  botonPaleta.onclick = () => {
+    enviarDatosVentana({ ventana: "paleta", titulo: `Paleta colores ${nombrePokemon}` }, { paletaColores: paletaColores });
+  }
+
+  return botonPaleta;
 }
 
 /**

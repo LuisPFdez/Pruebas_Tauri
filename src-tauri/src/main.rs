@@ -5,34 +5,19 @@
 mod imagenes;
 mod errores;
 mod propiedades;
+mod utils;
+
 use errores::{CustomError, TauriError};
-use imagenes::redimensionar_imagen;
+use imagenes::{generar_paleta_imagen, redimensionar_imagen};
 use propiedades::{PropiedadesPredeterminadas, PropiedadesVentana};
 
-use log::info;
+use log::{error, info};
 use std::{path::PathBuf, sync::OnceLock};
-use tauri::{CustomMenuItem, Manager, Menu, Submenu, WindowMenuEvent};
+use tauri::{api, CustomMenuItem, Event, Manager, Menu, WindowMenuEvent};
 use tauri_plugin_log::LogTarget;
 
 static NOMBRE_VENTANA_SECUNDARIA: &'static str = "vent_sec_";
 static PROPIEDADES_VENTANA: OnceLock<PropiedadesPredeterminadas> = OnceLock::new();
-
-/// Funcion que crear y devuelve un menu por defecto,
-fn crear_barra_de_menu() -> Menu {
-    let abrir = CustomMenuItem::new("abrir", "Abrir");
-    let cerrar = CustomMenuItem::new("cerrar", "Cerrar");
-    let recargar = CustomMenuItem::new("recargar", "Recargar");
-    let salir = CustomMenuItem::new("salir", "Salir");
-    let archivo = Submenu::new(
-        "Archivo",
-        Menu::new()
-            .add_item(abrir)
-            .add_item(cerrar)
-            .add_item(recargar),
-    );
-
-    return Menu::new().add_submenu(archivo).add_item(salir);
-}
 
 #[tauri::command]
 fn es_desa() -> bool {
@@ -129,13 +114,13 @@ fn main() {
 
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().targets(target).build())
-        .menu(crear_barra_de_menu())
         .on_menu_event(menu_handler)
         .invoke_handler(tauri::generate_handler![
             abrir_nueva_ventana,
             es_desa,
             prefijo_ventana,
-            redimensionar_imagen
+            redimensionar_imagen,
+            generar_paleta_imagen
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
