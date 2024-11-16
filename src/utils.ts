@@ -3,7 +3,6 @@ import { emit, listen, Event } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/window";
 import { estadoVentana, rgbArray } from "./interfaces/tipos";
 import { ErrorVentana } from "./errors/ErrorVentana";
-import { info } from "tauri-plugin-log-api";
 
 function capitalizarPrimeraLetra(texto: string): string {
     return `${texto.charAt(0).toLocaleUpperCase()}${texto.slice(1)}`
@@ -54,10 +53,16 @@ function rgbAHexadecimal(rgb: rgbArray): string {
     return "#".concat(rgb[0].toString(16).padStart(2, "0"), rgb[1].toString(16).padStart(2, "0"), rgb[2].toString(16).padStart(2, "0"));
 }
 
-function eliminarContenido(nodos: Node) {
-   while(nodos.firstChild){
-        nodos.firstChild.remove();
-   }
+function colorComplementario(rgb:rgbArray): rgbArray {
+    return [ 
+        255 - rgb[0],        255 - rgb[1],         255 - rgb[2]
+    ]
 }
 
-export { capitalizarPrimeraLetra, ejecutarFuncionAlCargarDoc, obtenerLabelVentana, enviarDatosVentana, eventoVentanaCargada, rgbAHexadecimal, eliminarContenido };
+function eliminarContenido(nodos: Node) {
+    while (nodos.firstChild) {
+        nodos.firstChild.remove();
+    }
+}
+
+export { capitalizarPrimeraLetra, ejecutarFuncionAlCargarDoc, obtenerLabelVentana, enviarDatosVentana, eventoVentanaCargada, rgbAHexadecimal, colorComplementario, eliminarContenido };

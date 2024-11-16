@@ -7,8 +7,67 @@
     <script type="module" src="/src/paleta.ts" ></script>
     <style>
         .color {
-            width: 50px;
-            height: 50px;
+            width: 100px;
+            height: 100px;
+            transition: transform 0.2s linear;
+        }
+        
+        .color:hover {
+            transform: scale(1.2);
+        }
+
+        .nodoColores {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        main {
+            padding: 15px;
+            display: flex;
+            gap: 5px;
+            flex-direction: column;
+        }
+
+        .nodoInfo {
+            height: 15px;
+            width: 75px;
+            border-radius: 20px;
+
+            position: relative;
+            top: 43.5%;
+            left: 12.5%;
+
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-size: 12px;            
+
+            animation: nIAnimacion linear 1s;
+        }
+
+        @keyframes nIAnimacion {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                color: #f6f6f6;
+                background-color: #2f2f2f;
+            }
+
+            .nodoInfo {
+                background-color: #f6f6f6;
+                color: black;
+            }
         }
     </style>
 </head>
