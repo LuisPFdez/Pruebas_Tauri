@@ -51,7 +51,7 @@ function eventoVentanaCargada<T>(callback: (evento: Event<T>) => void) {
 }
 
 function rgbAHexadecimal(rgb: rgbArray): string {
-    return "#".concat(rgb[0].toString(16), rgb[1].toString(16), rgb[2].toString(16));
+    return "#".concat(rgb[0].toString(16).padStart(2, "0"), rgb[1].toString(16).padStart(2, "0"), rgb[2].toString(16).padStart(2, "0"));
 }
 
 function eliminarContenido(nodos: Node) {
