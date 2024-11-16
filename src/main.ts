@@ -3,7 +3,8 @@ import { listen, emit } from "@tauri-apps/api/event";
 import { ConfirmDialogOptions, confirm, message, MessageDialogOptions } from "@tauri-apps/api/dialog";
 import { trace, info, error, attachConsole } from "tauri-plugin-log-api";
 import { tipos_pokemon, traduccion_tipos } from "./assets/iconos";
-import { capitalizarPrimeraLetra } from "./utils";
+import { capitalizarPrimeraLetra, eliminarContenido, enviarDatosVentana } from "./utils";
+import { paletaColoresType } from "./interfaces/tipos";
 
 const ancho_sprite = 300;
 const alto_sprite = 300;
@@ -203,7 +204,7 @@ async function crearBotonPaleta(url: string, nombrePokemon: string): Promise<HTM
   botonPaleta.innerHTML = "P";
 
   botonPaleta.onclick = () => {
-    enviarDatosVentana({ ventana: "paleta", titulo: `Paleta colores ${nombrePokemon}` }, { paletaColores: paletaColores });
+    enviarDatosVentana({ ventana: "paleta", titulo: `Paleta colores ${capitalizarPrimeraLetra(nombrePokemon)}` }, { paletaColores: paletaColores });
   }
 
   return botonPaleta;
@@ -217,16 +218,18 @@ function buscarPokemon(pokemon: string) {
   fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon}`)
     .then(data => {
       if (data.status != 200) {
-        let razon;
+        let razon: string;
+        let mostrarRazon: boolean = false;
         switch (data.status) {
           case 404:
             razon = "Nombre de pokemon o ID incorrecto";
+            mostrarRazon = true;
             break;
           default:
             razon = `Error ${data.status}. ${data.statusText}`;
             break;
         }
-        return Promise.reject(razon);
+        return Promise.reject({mostrarRazon, razon});
       }
       return data.json() as Promise<PokemonSpecies>;
     })
@@ -239,6 +242,12 @@ function buscarPokemon(pokemon: string) {
         area_imagen?.appendChild(cartaPokemon);
       });
     })
-    .catch(e => console.log("Error, ", e));
+    .catch((e: {mostrarRazon: boolean, razon: string}) => {
+        let {mostrarRazon, razon} = e;
+        error(`Error al buscar: ${razon}`);
+        if(mostrarRazon) {
+          mostrarInfo(razon);
+        }
+    });
 }
 
