@@ -200,6 +200,7 @@ function crearBotonGrito(gritosPokemon: PokemonCries): HTMLButtonElement {
 async function crearBotonPaleta(url: string, nombrePokemon: string): Promise<HTMLButtonElement> {
   let arrayImagen = await arrayFromURL(url);
   let paletaColores: paletaColoresType = await invoke("generar_paleta_imagen", { imagen: arrayImagen, tamanyo: 5 });
+  localStorage.setItem("ArrayImagen", arrayImagen.toString());
   let botonPaleta = document.createElement("button");
   botonPaleta.innerHTML = "P";
 
