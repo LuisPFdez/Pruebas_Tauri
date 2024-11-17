@@ -48,7 +48,7 @@ interface PokemonSprites {
     front_default: string;
     front_female: string;
     front_shiny: string;
-    front_shiny_female: string;
+    front_shiny_female?: string;
 }
 
 interface PokemonType {
@@ -66,10 +66,17 @@ interface PokemonSpecies {
     is_mythical: boolean,
     has_gender_differences: boolean,
     forms_switchable: boolean,
-    varieties: Array<PokemonSpeciesVariety>
+    varieties: Array<PokemonSpeciesVariety>,
+    flavor_text_entries: Array<FlavorText>
 }
 
 interface PokemonSpeciesVariety {
     is_default: boolean,
     pokemon: NamedAPIResource<Pokemon>
+}
+
+interface FlavorText {
+    flavor_text: string,
+    language: NamedAPIResource<unknown>,
+    version: NamedAPIResource<unknown>
 }
