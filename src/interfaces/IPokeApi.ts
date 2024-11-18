@@ -30,7 +30,7 @@ interface Chain {
 interface Pokemon {
     id: number;
     name: string;
-    forms: NamedAPIResource<unknown>;
+    forms: Array<NamedAPIResource<PokemonForm>>;
     sprites: PokemonSprites;
     cries: PokemonCries;
     types: Array<PokemonType>;
@@ -90,6 +90,7 @@ interface FlavorText {
 }
 
 interface PokemonForm {
+    id: number,
     name: string;
     form_name: string;
     is_battle_only: boolean;
@@ -97,4 +98,10 @@ interface PokemonForm {
     pokemon: NamedAPIResource<Pokemon>;
     types: Array<PokemonType>;
     sprites: PokemonFormSprites;
+    names: Array<Name>
+}
+
+interface Name {
+    name: string;
+    language: NamedAPIResource<unknown>;
 }

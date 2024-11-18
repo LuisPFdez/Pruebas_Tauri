@@ -163,7 +163,15 @@ img[src] {
 }
 
 .nombre {
-  margin-top: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+
+  text-transform: capitalize;
+}
+
+.subnombre {
+  margin-top: 5px;
   text-align: center;
 
   text-transform: capitalize;

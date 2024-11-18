@@ -10,6 +10,7 @@ const ancho_sprite = 300;
 const alto_sprite = 300;
 
 let esDesa: boolean = false;
+let especiePokemon: PokemonSpecies;
 
 //Funcion que de muestra para capturar los logs atraves de los eventos
 async function log() {
@@ -105,6 +106,7 @@ function crearTarjetaPokemon(datosPokemon: Pokemon, descripcion: Array<FlavorTex
   let seccion_tipos = document.createElement("section");
   reverso.appendChild(nombre_reverso);
   reverso.appendChild(info_pokemon);
+  reverso.appendChild(crearSelectListForms(datosPokemon.forms, datosPokemon.id, nombre, imagen, seccion_tipos))
   reverso.appendChild(seccion_tipos);
   reverso.appendChild(crearBotonGrito(datosPokemon.cries));
   crearBotonPaleta(datosPokemon.sprites.front_default, datosPokemon.name).then((boton) => {
@@ -114,29 +116,33 @@ function crearTarjetaPokemon(datosPokemon: Pokemon, descripcion: Array<FlavorTex
   })
 
   nombre_reverso.innerText = datosPokemon.name;
-  info_pokemon.innerText = descripcion.find((text) => text.language.name == "es")?.flavor_text || "";
+  info_pokemon.innerText = descripcion.find(text => text.language.name == "es")?.flavor_text || "";
   seccion_tipos.classList.add("area_tipos");
+  eliminarContenido(seccion_tipos);
   datosPokemon.types.forEach(tipo => {
-    const nombre_tipo = tipo.type.name;
-
-    let div_tipo = document.createElement("div");
-    let imagen_tipo = new Image(30, 30);
-    let texto_tipo = document.createElement("span");
-
-    seccion_tipos.appendChild(div_tipo).appendChild(imagen_tipo);
-
-    imagen_tipo.src = tipos_pokemon[nombre_tipo];
-    imagen_tipo.alt = `Tipo ${traduccion_tipos[nombre_tipo]}`;
-
-    div_tipo.classList.add(nombre_tipo, "tipo");
-    texto_tipo.innerText = traduccion_tipos[nombre_tipo];
-
-    div_tipo.appendChild(texto_tipo);
+    crearTipo(tipo, seccion_tipos);
   });
-
 
   return area_tarjeta;
 
+}
+
+function crearTipo(tipo: PokemonType, seccion_tipos: HTMLElement) {
+  const nombre_tipo = tipo.type.name;
+
+  let div_tipo = document.createElement("div");
+  let imagen_tipo = new Image(30, 30);
+  let texto_tipo = document.createElement("span");
+
+  seccion_tipos.appendChild(div_tipo).appendChild(imagen_tipo);
+
+  imagen_tipo.src = tipos_pokemon[nombre_tipo];
+  imagen_tipo.alt = `Tipo ${traduccion_tipos[nombre_tipo]}`;
+
+  div_tipo.classList.add(nombre_tipo, "tipo");
+  texto_tipo.innerText = traduccion_tipos[nombre_tipo];
+
+  div_tipo.appendChild(texto_tipo);
 }
 
 function fetchData<T>(url: URL | RequestInfo): Promise<T> {
@@ -188,10 +194,9 @@ window.addEventListener("DOMContentLoaded", () => {
 function crearBotonGrito(gritosPokemon: PokemonCries): HTMLButtonElement {
   let botonReproducir = document.createElement("button");
   botonReproducir.innerHTML = "|>";
-  let audio = new Audio(gritosPokemon.latest);
 
   botonReproducir.onclick = () => {
-    audio.play();
+    enviarDatosVentana({ ventana: "reproductor", titulo: "Pruebas" }, { gritos: gritosPokemon });
   }
 
   return botonReproducir;
@@ -211,11 +216,55 @@ async function crearBotonPaleta(url: string, nombrePokemon: string): Promise<HTM
   return botonPaleta;
 }
 
+/** Crea un select list de las formas del pokemon */
+function crearSelectListForms(forms: Array<NamedAPIResource<PokemonForm>>, id: number, h2: HTMLElement, imagen: HTMLImageElement, seccion_tipos: HTMLElement): HTMLElement {
+  let sel = document.createElement("select");
+
+  forms.forEach((val) => {
+    let opt = document.createElement("option");
+    sel.add(opt);
+
+    opt.textContent = val.name;
+    opt.value = val.url;
+    
+
+    if(val.url.split("/").includes(id.toString())) {
+      info("Forma seleccionada: " + val.name + ", " + id);
+      sel.value = val.url ;
+    }
+  });
+
+  sel.addEventListener("change", _ => {
+      let opcion = sel.options[sel.selectedIndex].value;
+
+      fetchData<PokemonForm>(opcion).then(datos => {
+        crearImagen(datos.sprites.front_default, imagen);
+
+        let h3: HTMLElement = h2.nextElementSibling as HTMLElement || document.createElement("h3");
+
+        if (datos.id != id){
+          h3.classList.add("subnombre");
+          h3.innerText = (datos.names.find( nombre => nombre.language.name == "es") || datos.names.find( nombre => nombre.language.name == "en")!).name;
+          h2.after(h3);
+        } else {
+          h3.remove();
+        }
+
+        eliminarContenido(seccion_tipos);
+        datos.types.forEach( tipo => {
+          crearTipo(tipo, seccion_tipos);
+        })
+      });
+  })
+
+  return sel;
+}
+
 /**
  * Busca un pokemon en la api y recupera toda la informacion de este
  * @param pokemon
  */
-function buscarPokemon(pokemon: string) {
+function buscarPokemon(pokemon: string): void {
   fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon}`)
     .then(data => {
       if (data.status != 200) {
@@ -235,7 +284,9 @@ function buscarPokemon(pokemon: string) {
       return data.json() as Promise<PokemonSpecies>;
     })
     .then((datosEspecies) => {
-      let pokemon = datosEspecies.varieties[0].pokemon;
+      especiePokemon = datosEspecies;
+      //Busca el valor por defecto de una especie, aunque no deberia deberia de haber al menos 1 a true, en caso contrario, devuelve el primer valor
+      let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
       fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
         let area_imagen = document.querySelector<HTMLDivElement>("#imagenes");
        
