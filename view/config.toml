@@ -9,9 +9,16 @@ posicion=[1, 1]
 
 
 [reproductor]
+alto=100
+ancho=300
 redimensionable=false
 decoraciones=false
 
 [paleta]
 alto=400
 ancho=400
+
+[comparador]
+titulo="Comparar Pokemons"
+alto=800
+ancho=1000

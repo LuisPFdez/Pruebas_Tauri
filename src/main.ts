@@ -115,6 +115,12 @@ function crearTarjetaPokemon(datosPokemon: Pokemon, descripcion: Array<FlavorTex
     error(`Error al generar la paleta de colores ${e}`);
   })
 
+  crearBotonComparador(datosPokemon).then((boton) => {
+    reverso.appendChild(boton)
+  }).catch((e) => {
+    error(`Error al generar el comparador ${e}`);
+  });
+
   nombre_reverso.innerText = datosPokemon.name;
   info_pokemon.innerText = descripcion.find(text => text.language.name == "es")?.flavor_text || "";
   seccion_tipos.classList.add("area_tipos");
@@ -226,38 +232,53 @@ function crearSelectListForms(forms: Array<NamedAPIResource<PokemonForm>>, id: n
 
     opt.textContent = val.name;
     opt.value = val.url;
-    
 
-    if(val.url.split("/").includes(id.toString())) {
+
+    if (val.url.split("/").includes(id.toString())) {
       info("Forma seleccionada: " + val.name + ", " + id);
-      sel.value = val.url ;
+      sel.value = val.url;
     }
   });
 
   sel.addEventListener("change", _ => {
-      let opcion = sel.options[sel.selectedIndex].value;
+    let opcion = sel.options[sel.selectedIndex].value;
 
-      fetchData<PokemonForm>(opcion).then(datos => {
-        crearImagen(datos.sprites.front_default, imagen);
+    fetchData<PokemonForm>(opcion).then(datos => {
+      crearImagen(datos.sprites.front_default, imagen);
 
-        let h3: HTMLElement = h2.nextElementSibling as HTMLElement || document.createElement("h3");
+      let h3: HTMLElement = h2.nextElementSibling as HTMLElement || document.createElement("h3");
 
-        if (datos.id != id){
-          h3.classList.add("subnombre");
-          h3.innerText = (datos.names.find( nombre => nombre.language.name == "es") || datos.names.find( nombre => nombre.language.name == "en")!).name;
-          h2.after(h3);
-        } else {
-          h3.remove();
-        }
+      if (datos.id != id) {
+        h3.classList.add("subnombre");
+        h3.innerText = (datos.names.find(nombre => nombre.language.name == "es") || datos.names.find(nombre => nombre.language.name == "en")!).name;
+        h2.after(h3);
+      } else {
+        h3.remove();
+      }
 
-        eliminarContenido(seccion_tipos);
-        datos.types.forEach( tipo => {
-          crearTipo(tipo, seccion_tipos);
-        })
-      });
+      eliminarContenido(seccion_tipos);
+      datos.types.forEach(tipo => {
+        crearTipo(tipo, seccion_tipos);
+      })
+    });
   })
 
   return sel;
+}
+
+async function crearBotonComparador(datosPokemon: Pokemon): Promise<HTMLButtonElement> {
+  let array = await arrayFromURL(datosPokemon.sprites.front_default)
+  localStorage.setItem("ArrayImagen", array.toString());
+
+  let botonComparador = document.createElement("button");
+
+  botonComparador.innerText = "C";
+
+  botonComparador.onclick = () => {
+    enviarDatosVentana({ ventana: "comparador" }, { datosPokemon })
+  }
+
+  return botonComparador;
 }
 
 /**
@@ -279,7 +300,7 @@ function buscarPokemon(pokemon: string): void {
             razon = `Error ${data.status}. ${data.statusText}`;
             break;
         }
-        return Promise.reject({mostrarRazon, razon});
+        return Promise.reject({ mostrarRazon, razon });
       }
       return data.json() as Promise<PokemonSpecies>;
     })
@@ -289,17 +310,17 @@ function buscarPokemon(pokemon: string): void {
       let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
       fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
         let area_imagen = document.querySelector<HTMLDivElement>("#imagenes");
-       
+
         let cartaPokemon = crearTarjetaPokemon(datos, datosEspecies.flavor_text_entries);
         area_imagen?.appendChild(cartaPokemon);
       });
     })
-    .catch((e: {mostrarRazon: boolean, razon: string}) => {
-        let {mostrarRazon, razon} = e;
-        error(`Error al buscar: ${razon}`);
-        if(mostrarRazon) {
-          mostrarInfo(razon);
-        }
+    .catch((e: { mostrarRazon: boolean, razon: string }) => {
+      let { mostrarRazon, razon } = e;
+      error(`Error al buscar: ${razon}`);
+      if (mostrarRazon) {
+        mostrarInfo(razon);
+      }
     });
 }
 

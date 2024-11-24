@@ -33,6 +33,7 @@ interface Pokemon {
     forms: Array<NamedAPIResource<PokemonForm>>;
     sprites: PokemonSprites;
     cries: PokemonCries;
+    stats: Array<PokemonStat>;
     types: Array<PokemonType>;
 }
 
@@ -104,4 +105,10 @@ interface PokemonForm {
 interface Name {
     name: string;
     language: NamedAPIResource<unknown>;
+}
+
+interface PokemonStat {
+    stat: NamedAPIResource<unknown>;
+    effort: number;
+    base_stat: number;
 }
