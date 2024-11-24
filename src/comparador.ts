@@ -1,3 +1,4 @@
+
 import { invoke } from "@tauri-apps/api";
 import { ejecutarFuncionAlCargarDoc, eventoVentanaCargada } from "./utils";
 import { traduccion_stats } from "./assets/iconos";
@@ -52,7 +53,9 @@ function mostrarEstadisticas(pokemon:Pokemon) {
     });
     
     desviacion = Math.sqrt(desviacion / pokemon.stats.length);
-    fichaPokemon(pokemon, [total, media, desviacion]);
+    if(!document.getElementById(pokemon.id.toString())){
+        fichaPokemon(pokemon, [total, media, desviacion]);
+    }
 }
 
 async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, number]) {
@@ -60,8 +63,11 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     let seccion_pokemon = document.createElement("section");
     main.appendChild(seccion_pokemon);
 
+    seccion_pokemon.style.marginTop = "15px";
+    seccion_pokemon.id = pokemon.id.toString();
     let imagen = document.createElement("img")
     seccion_pokemon.appendChild(imagen);
+
     
     let arrayImagenString = localStorage.getItem("ArrayImagen");
 
@@ -74,10 +80,22 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     let seccion_estadistica = document.createElement("section");
     seccion_pokemon.appendChild(seccion_estadistica);
     seccion_estadistica.style.display = "flex";
+    seccion_estadistica.style.marginTop = "10px";
 
-    pokemon1.stats.forEach((val) => {
+    pokemon.stats.forEach((val) => {
         anyadirEstadistica(seccion_estadistica, val);
     });
+
+    let estadisticas_generales = document.createElement("section");
+    seccion_pokemon.appendChild(estadisticas_generales);
+
+    let estadisticas_nombre = ["Total", "MEDIA", "\u{03C3}"]
+
+    estadisticas.forEach((val, index) => {
+        let p = document.createElement("p");
+        estadisticas_generales.appendChild(p);
+        p.innerText = `${estadisticas_nombre[index]}: ${val.toFixed(2)}`;
+    })
 }
 
 function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: PokemonStat) {
