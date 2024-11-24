@@ -6,7 +6,7 @@ import { invoke } from "@tauri-apps/api";
 let botonCargados = false;
 
 interface datosEvento {
-    paletaColores: paletaColoresType
+    paletaColores: paletaColoresType;
 }
 
 eventoVentanaCargada((evento) => {
@@ -24,21 +24,23 @@ function crearNuevoNodo(main: HTMLElement) {
 function domCargado(paleta: paletaColoresType) {
     let main = document.querySelector("main")!;
     generarPaleta(paleta, main);
-    if(!botonCargados) {
+    if (!botonCargados) {
         botonCargados = true;
         let elementoContenedor = document.createElement("section");
         elementoContenedor.classList.add("botonesCont");
         main.appendChild(elementoContenedor);
         main.parentElement?.appendChild(elementoContenedor);
-        
+
         let btnRegenPaleta = document.createElement("button");
         let inptRegenPaleta = document.createElement("input");
         inptRegenPaleta.min = "0";
         inptRegenPaleta.max = "100"
         inptRegenPaleta.type = "number";
+        inptRegenPaleta.value = "5";
         btnRegenPaleta.innerText = "Regenerar paleta";
+
         btnRegenPaleta.addEventListener("click", () => {
-            if(Number.isNaN(inptRegenPaleta.value)) {
+            if (Number.isNaN(inptRegenPaleta.value)) {
                 throw new Error("Error, el valor no es un numero");
             }
 
@@ -49,20 +51,20 @@ function domCargado(paleta: paletaColoresType) {
 
             let arrayImagenString = localStorage.getItem("ArrayImagen");
 
-            if(arrayImagenString != null) {
-                let arrayImagen =  arrayImagenString.split(",").map((val) => {
+            if (arrayImagenString != null) {
+                let arrayImagen = arrayImagenString.split(",").map((val) => {
                     return Number(val);
                 });
 
-                invoke("generar_paleta_imagen", { imagen: arrayImagen, tamanyo: valorInput }).then((datos: paletaColoresType) => {
-                    generarPaleta(datos, main);
-                }) .catch (e => {throw e});
+                invoke("generar_paleta_imagen", { imagen: arrayImagen, tamanyo: valorInput }).then((datos) => {
+                    generarPaleta(datos as paletaColoresType, main);
+                }).catch(e => { throw e });
 
             } else {
                 throw new Error("Error al recuperar esto");
             }
         })
-        
+
         elementoContenedor.appendChild(inptRegenPaleta);
         elementoContenedor.appendChild(btnRegenPaleta);
     }
@@ -71,7 +73,7 @@ function domCargado(paleta: paletaColoresType) {
 async function generarPaleta(paleta: paletaColoresType, elementoPadre: HTMLElement) {
     eliminarContenido(elementoPadre);
 
-    let nodoColores = crearNuevoNodo(elementoPadre )  
+    let nodoColores = crearNuevoNodo(elementoPadre)
 
     paleta.forEach((color) => {
         let hexadecimal = rgbAHexadecimal(color);
@@ -83,7 +85,7 @@ async function generarPaleta(paleta: paletaColoresType, elementoPadre: HTMLEleme
         } else {
             nodoColores.appendChild(recuadroColor);
         }
-        
+
         recuadroColor.classList.add("color");
         recuadroColor.title = `Copiar color ${hexadecimal}`;
         recuadroColor.style.backgroundColor = hexadecimal;
@@ -93,7 +95,7 @@ async function generarPaleta(paleta: paletaColoresType, elementoPadre: HTMLEleme
             nodoInfo.style.backgroundColor = rgbAHexadecimal(colorComplementario(color));
             nodoInfo.style.color = hexadecimal;
             nodoInfo.classList.add("nodoInfo");
-            
+
             setTimeout(() => {
                 nodoInfo.remove();
             }, 1000);
