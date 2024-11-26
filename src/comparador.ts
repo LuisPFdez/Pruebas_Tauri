@@ -1,7 +1,8 @@
 
 import { invoke } from "@tauri-apps/api";
-import { ejecutarFuncionAlCargarDoc, eventoVentanaCargada } from "./utils";
-import { traduccion_stats } from "./assets/iconos";
+import { ejecutarFuncionAlCargarDoc, eventoVentanaCargada, fetchData } from "./utils";
+import { abreviaturas_stats, tipos_pokemon, traduccion_stats, traduccion_tipos } from "./assets/iconos";
+import { mapaDebilidades, objetoDebilidades } from "./interfaces/tipos";
 
 interface datosEvento {
     datosPokemon: Pokemon;
@@ -60,14 +61,20 @@ function mostrarEstadisticas(pokemon:Pokemon) {
 
 async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, number]) {
     let main = document.querySelector<HTMLElement>("main")!;
-    let seccion_pokemon = document.createElement("section");
-    main.appendChild(seccion_pokemon);
+    
 
-    seccion_pokemon.style.marginTop = "15px";
-    seccion_pokemon.id = pokemon.id.toString();
+    let seccionPokemon = document.createElement("section");
+    
+    seccionPokemon.classList.add("seccionPokemon");
+    seccionPokemon.id = pokemon.id.toString();
+    
     let imagen = document.createElement("img")
-    seccion_pokemon.appendChild(imagen);
-
+    let seccionTipos = document.createElement("section");
+    let seccionGeneral = document.createElement("section");
+    seccionPokemon.appendChild(seccionGeneral);
+    
+    seccionGeneral.appendChild(imagen);
+    seccionGeneral.appendChild(seccionTipos);
     
     let arrayImagenString = localStorage.getItem("ArrayImagen");
 
@@ -77,26 +84,154 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
         await crearImagen(arrayImagen, imagen);
     }
 
-    let seccion_estadistica = document.createElement("section");
-    seccion_pokemon.appendChild(seccion_estadistica);
-    seccion_estadistica.style.display = "flex";
-    seccion_estadistica.style.marginTop = "10px";
+    let seccionEstadistica = document.createElement("section");
+    seccionPokemon.appendChild(seccionEstadistica);
+    seccionEstadistica.style.display = "flex";
+    seccionEstadistica.style.marginTop = "10px";
 
     pokemon.stats.forEach((val) => {
-        anyadirEstadistica(seccion_estadistica, val);
+        anyadirEstadistica(seccionEstadistica, val);
     });
 
-    let estadisticas_generales = document.createElement("section");
-    seccion_pokemon.appendChild(estadisticas_generales);
+    let stGenerales = document.createElement("section");
+    seccionPokemon.appendChild(stGenerales);
+    stGenerales.classList.add("stGenerales");
 
-    let estadisticas_nombre = ["Total", "MEDIA", "\u{03C3}"]
+    let estadisticasNombre = ["Total", "Media", "\u{03C3}"];
 
     estadisticas.forEach((val, index) => {
         let p = document.createElement("p");
-        estadisticas_generales.appendChild(p);
-        p.innerText = `${estadisticas_nombre[index]}: ${val.toFixed(2)}`;
+        stGenerales.appendChild(p);
+        p.innerText = `${estadisticasNombre[index]}: ${val.toFixed(2)}`;
     })
+
+    let debilidades: Array<TypeRelations> = []; 
+    
+    pokemon.types.forEach(async (tipo) => {
+        crearTipo(tipo.type.name, seccionTipos);
+    })
+    
+    debilidades[0] = (await fetchData<Type>(pokemon.types[0].type.url)).damage_relations;
+
+    if(pokemon.types.length == 2 ) {
+        debilidades[1] = (await fetchData<Type>(pokemon.types[1].type.url)).damage_relations;
+    }
+
+    let seccionResistencias = document.createElement("section");
+    seccionPokemon.appendChild(seccionResistencias);
+    mostrarDebilidades(debilidades, seccionResistencias);
+    
+    main.style.gridTemplateColumns = "300px ".repeat(main.childElementCount + 1);
+    main.appendChild(seccionPokemon);
 }
+
+function mostrarDebilidades(debilidades: TypeRelations[], seccionResistencias: HTMLElement) {
+    let debilidadesMap = calcularDebilidades(debilidades);
+    console.log(debilidadesMap);
+    let clasesDebilidades: Record<number, string> = {
+        4: "superEfectivo",
+        2: "efectivo",
+        1: "normal",
+        0.5: "resistente",
+        0.25: "superResistente",
+        0: "inume"
+    }
+
+    for (const [clave, valores] of debilidadesMap.entries()) {
+        seccionResistencias.appendChild(crearSeccionResistencias(clasesDebilidades[clave], valores));
+    }
+    
+}
+
+function crearSeccionResistencias(clase: string, valores: string[] ): HTMLElement {
+    let element = document.createElement("section");
+    element.classList.add(clase);
+
+    valores.forEach(val => {
+        crearTipo(val, element);
+    })
+
+    return element;
+}
+
+function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]> {
+    let  objectToMap = (debilidad: TypeRelations, mapaDebilidad: mapaDebilidades) => {
+        debilidad.double_damage_from.map((val) => {
+            mapaDebilidad.set(val.name, 2);
+        });
+
+        debilidad.half_damage_from.map((val) => {
+            mapaDebilidad.set(val.name, 0.5);
+        });
+
+        debilidad.no_damage_from.map((val) => {
+            mapaDebilidad.set(val.name, 0);
+        });
+    }
+
+    let calcularFactor= (mapaDeb1: mapaDebilidades, mapaDeb2: mapaDebilidades, mapaFactores: mapaDebilidades) => {
+        mapaDeb1.forEach((factor, tipo) => {
+            let factor2 = mapaDeb2.get(tipo) || 1;
+
+            mapaFactores.set(tipo, factor * factor2);
+        })
+    }
+
+    let debilidadesFinal: mapaDebilidades = new Map();
+    let tipos = Object.keys(tipos_pokemon);
+
+    //https://github.com/yashrajbharti/Pokemon-Type-Weakness-Calculator/blob/main/script.js
+    if(debilidades.length == 2) {
+        let deb1 = debilidades[0];
+        let deb2 = debilidades[1];
+
+        let mapDeb1:mapaDebilidades = new Map();
+        let mapDeb2:mapaDebilidades = new Map();
+
+        objectToMap(deb1, mapDeb1);
+        objectToMap(deb2, mapDeb2);
+
+        calcularFactor(mapDeb1, mapDeb2, debilidadesFinal);
+        calcularFactor(mapDeb2, mapDeb1, debilidadesFinal);
+
+    } else {
+        let deb1 = debilidades[0];
+       objectToMap(deb1, debilidadesFinal);
+    }
+
+    tipos.forEach((val) => {
+        if(!debilidadesFinal.has(val)){
+            debilidadesFinal.set(val, 1);
+        }
+    })
+
+    let debilidadesAgrupadas = new Map<number, string[]>()
+
+    debilidadesFinal.forEach((val, key) => {
+        let array = debilidadesAgrupadas.get(val) || [];
+        array.push(key);
+        debilidadesAgrupadas.set(val, array);
+    })
+
+    return debilidadesAgrupadas;
+}
+
+//En un futuro se modularizara esta funcion, es una solucion temporal
+function crearTipo(nombre_tipo: string, seccion_tipos: HTMLElement) {
+    let div_tipo = document.createElement("div");
+    let imagen_tipo = new Image(30, 30);
+    let texto_tipo = document.createElement("span");
+  
+    seccion_tipos.appendChild(div_tipo).appendChild(imagen_tipo);
+  
+    imagen_tipo.src = tipos_pokemon[nombre_tipo];
+    imagen_tipo.alt = `Tipo ${traduccion_tipos[nombre_tipo]}`;
+  
+    div_tipo.classList.add(nombre_tipo, "tipo");
+    texto_tipo.innerText = traduccion_tipos[nombre_tipo];
+  
+    div_tipo.appendChild(texto_tipo);
+  }
 
 function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: PokemonStat) {
     let stElement = document.createElement("section");
@@ -108,6 +243,8 @@ function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: Pokemo
     stElement.appendChild(stValor);
     stElement.appendChild(stPorcentaje);
     stElement.appendChild(stTitulo);
+    stValor.classList.add("valor")
+    stTitulo.classList.add("stTitulo")
 
     stElement.classList.add("estadistica");
     stPorcentaje.classList.add("barra_estadistica");
@@ -119,7 +256,8 @@ function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: Pokemo
     stSpan.style.height =  porcentajeAltura + "%";
     stSpan.style.top = (100 - porcentajeAltura)  + "%";
     stValor.innerText = estadistica.base_stat.toString();
-    stTitulo.innerText = traduccion_stats[estadistica.stat.name];
+    stTitulo.innerText = abreviaturas_stats[estadistica.stat.name];
+    stTitulo.title = traduccion_stats[estadistica.stat.name];
 
 } 
 
@@ -127,6 +265,8 @@ async function crearImagen(arrayImagen: number[], imagen: HTMLImageElement) {
     let datosImagen = Int8Array.from(await invoke("redimensionar_imagen", { imagen: arrayImagen, ancho: 200, alto: 200 }) as number[]);
     imagen.src = URL.createObjectURL(new Blob([datosImagen.buffer], { type: "image/png" }));
 }
+
+
 
 
 // TODO Modularizar la busqueda
