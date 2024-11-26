@@ -4,7 +4,7 @@ import { WebviewWindow } from "@tauri-apps/api/window";
 import { estadoVentana, rgbArray } from "./interfaces/tipos";
 import { ErrorVentana } from "./errors/ErrorVentana";
 
-let emisor:UnlistenFn = () => {};
+let emisor: UnlistenFn = () => { };
 
 function capitalizarPrimeraLetra(texto: string): string {
     return `${texto.charAt(0).toLocaleUpperCase()}${texto.slice(1)}`
@@ -56,9 +56,9 @@ function rgbAHexadecimal(rgb: rgbArray): string {
     return "#".concat(rgb[0].toString(16).padStart(2, "0"), rgb[1].toString(16).padStart(2, "0"), rgb[2].toString(16).padStart(2, "0"));
 }
 
-function colorComplementario(rgb:rgbArray): rgbArray {
-    return [ 
-        255 - rgb[0],        255 - rgb[1],         255 - rgb[2]
+function colorComplementario(rgb: rgbArray): rgbArray {
+    return [
+        255 - rgb[0], 255 - rgb[1], 255 - rgb[2]
     ]
 }
 
@@ -68,4 +68,8 @@ function eliminarContenido(nodos: Node) {
     }
 }
 
-export { capitalizarPrimeraLetra, ejecutarFuncionAlCargarDoc, obtenerLabelVentana, enviarDatosVentana, eventoVentanaCargada, rgbAHexadecimal, colorComplementario, eliminarContenido };
+function fetchData<T>(url: URL | RequestInfo): Promise<T> {
+    return fetch(url).then(data => data.json())
+}
+
+export { capitalizarPrimeraLetra, ejecutarFuncionAlCargarDoc, obtenerLabelVentana, enviarDatosVentana, eventoVentanaCargada, rgbAHexadecimal, colorComplementario, eliminarContenido, fetchData };

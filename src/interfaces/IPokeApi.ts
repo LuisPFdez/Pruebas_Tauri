@@ -62,7 +62,7 @@ interface PokemonFormSprites {
 
 interface PokemonType {
     slot: number;
-    type: NamedAPIResource<unknown>;
+    type: NamedAPIResource<Type>;
 }
 
 interface PokemonSpecies {
@@ -91,7 +91,7 @@ interface FlavorText {
 }
 
 interface PokemonForm {
-    id: number,
+    id: number;
     name: string;
     form_name: string;
     is_battle_only: boolean;
@@ -111,4 +111,18 @@ interface PokemonStat {
     stat: NamedAPIResource<unknown>;
     effort: number;
     base_stat: number;
+}
+
+interface Type {
+    name: string;
+    damage_relations: TypeRelations;
+}
+
+interface TypeRelations {
+    no_damage_to: Array<NamedAPIResource<Type>>;
+    half_damage_to: Array<NamedAPIResource<Type>>;
+    double_damage_to: Array<NamedAPIResource<Type>>;
+    no_damage_from: Array<NamedAPIResource<Type>>;
+    half_damage_from: Array<NamedAPIResource<Type>>;
+    double_damage_from: Array<NamedAPIResource<Type>>;
 }

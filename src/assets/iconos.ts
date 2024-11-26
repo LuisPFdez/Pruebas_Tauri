@@ -17,7 +17,7 @@ import rock from "./type-icons/rock.svg";
 import steel from "./type-icons/steel.svg";
 import water from "./type-icons/water.svg";
 
-export { tipos_pokemon, traduccion_tipos, traduccion_stats };
+export { tipos_pokemon, traduccion_tipos, traduccion_stats, abreviaturas_stats };
 
 const tipos_pokemon: Record<string, string> = {
     "bug": bug,
@@ -62,6 +62,15 @@ const traduccion_tipos: Record<string, string> = {
 }
 
 const traduccion_stats: Record<string, string> = {
+    "hp": "PS",
+    "attack": "Ataque",
+    "defense": "Defensa",
+    "special-attack": "Ataque Especial",
+    "special-defense": "Defensa Especial",
+    "speed": "Velocidad",
+}
+
+const abreviaturas_stats: Record<string, string> = {
     "hp": "PS",
     "attack": "A",
     "defense": "D",
