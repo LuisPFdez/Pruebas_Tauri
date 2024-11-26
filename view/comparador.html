@@ -8,12 +8,46 @@
     <script type="module" src="/src/comparador.ts"></script>
     <link rel="stylesheet" href="/src/styles.css">
     <style>
-        .estadistica {
-            margin-right: 15px;
+        .seccionPokemon {
             display: flex;
             flex-direction: column;
         }
-        
+
+        .seccionPokemon hr {
+            width: 100%;
+            color: brown;
+        }
+
+        .estadistica {
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+        }
+
+        .valor {
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .stTitulo {
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .stGenerales {
+            display: grid;
+            grid-template-areas:
+                "a b"
+                "c c";
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .stGenerales :nth-last-child(1) {
+            grid-area: c;
+        }
+
         .barra_estadistica {
             width: 20px;
             height: 200px;
@@ -26,6 +60,33 @@
             width: 100%;
             background-color: darksalmon;
         }
+
+        .superEfectivo {
+            background-color: red;
+        }
+
+        .efectivo {
+            background-color: brown;
+        }
+
+        .normal {
+            background-color: grey;
+        }
+
+        .resistente {
+            background-color: green;
+        }
+
+        .superResistente {
+            background-color: darkgreen;
+        }
+
+        main {
+            margin-top: 15px;
+            display: grid;
+            justify-content: center;
+            justify-items: center;
+        }
     </style>
 </head>
 
@@ -37,7 +98,7 @@
     </header>
 
     <main>
-        
+
     </main>
 </body>
 
