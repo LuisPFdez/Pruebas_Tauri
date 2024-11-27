@@ -17,48 +17,27 @@ import rock from "./type-icons/rock.svg";
 import steel from "./type-icons/steel.svg";
 import water from "./type-icons/water.svg";
 
-export { tipos_pokemon, traduccion_tipos, traduccion_stats, abreviaturas_stats };
+export { tipos_pokemon, traduccion_stats, abreviaturas_stats };
 
-const tipos_pokemon: Record<string, string> = {
-    "bug": bug,
-    "dark": dark,
-    "dragon": dragon,
-    "electric": electric,
-    "fairy": fairy,
-    "fighting": fighting,
-    "fire": fire,
-    "flying": flying,
-    "ghost": ghost,
-    "grass": grass,
-    "ground": ground,
-    "ice": ice,
-    "normal": normal,
-    "poison": poison,
-    "psychic": psychic,
-    "rock": rock,
-    "steel": steel,
-    "water": water,
-}
-
-const traduccion_tipos: Record<string, string> = {
-    "bug": "Bicho",
-    "dark": "Siniestro",
-    "dragon": "Dragon",
-    "electric": "Electrico",
-    "fairy": "Hada",
-    "fighting": "Lucha",
-    "fire": "Fuego",
-    "flying": "Volador",
-    "ghost": "Fantasma",
-    "grass": "Planta",
-    "ground": "Tierra",
-    "ice": "Hielo",
-    "normal": "Normal",
-    "poison": "Veneno",
-    "psychic": "Psíquico",
-    "rock": "Roca",
-    "steel": "Acero",
-    "water": "Agua",
+const tipos_pokemon: Record<string, [string, string]> = {
+    "bug": [bug, "Bicho"],
+    "dark": [dark, "Siniestro"],
+    "dragon": [dragon, "Dragon"],
+    "electric": [electric, "Electrico"],
+    "fairy": [fairy, "Hada"],
+    "fighting": [fighting, "Lucha"],
+    "fire": [fire, "Fuego"],
+    "flying": [flying, "Volador"],
+    "ghost": [ghost, "Fantasma"],
+    "grass": [grass, "Planta"],
+    "ground": [ground, "Tierra"],
+    "ice": [ice, "Hielo"],
+    "normal": [normal, "Normal"],
+    "poison": [poison, "Veneno"],
+    "psychic": [psychic, "Psíquico"],
+    "rock": [rock, "Roca"],
+    "steel": [steel, "Acero"],
+    "water": [water, "Agua"],
 }
 
 const traduccion_stats: Record<string, string> = {

@@ -1,20 +1,21 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/src/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pruebas</title>
-    <script type="module" src="/src/main.ts" defer></script>
-  </head>
 
-  <body>
-    <header id="busqueda">
-      <input type="text" id="cuadro_busqueda" placeholder="Introduce el nombre/id del pokemon. Pulsa &#x21B5; para buscar">
-      <button id="boton_busqueda"><span>&#x21B5;</span></button>
-    </header>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="/src/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pruebas</title>
+  <script type="module" src="/src/main.ts" defer></script>
+  <script src="/src/components/header-busqueda.ts"></script>
+</head>
+
+<body>
+  <header-busqueda id="hBusqueda" placeholder="Introduce el nombre/id del pokemon. Pulsa &#x21B5; para buscar"
+    contenido-boton="&#x21B5;"></barra-busqueda>
     <section id="imagenes">
 
     </section>
-  </body>
+</body>
+
 </html>

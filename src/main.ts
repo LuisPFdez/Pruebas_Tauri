@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { listen, emit } from "@tauri-apps/api/event";
 import { ConfirmDialogOptions, confirm, message, MessageDialogOptions } from "@tauri-apps/api/dialog";
 import { trace, info, error, attachConsole } from "tauri-plugin-log-api";
-import { tipos_pokemon, traduccion_tipos } from "./assets/iconos";
+import { tipos_pokemon } from "./assets/iconos";
 import { capitalizarPrimeraLetra, eliminarContenido, enviarDatosVentana, fetchData } from "./utils";
 import { paletaColoresType } from "./interfaces/tipos";
 
@@ -142,11 +142,11 @@ function crearTipo(tipo: PokemonType, seccion_tipos: HTMLElement) {
 
   seccion_tipos.appendChild(div_tipo).appendChild(imagen_tipo);
 
-  imagen_tipo.src = tipos_pokemon[nombre_tipo];
-  imagen_tipo.alt = `Tipo ${traduccion_tipos[nombre_tipo]}`;
+  imagen_tipo.src = tipos_pokemon[nombre_tipo][0];
+  imagen_tipo.alt = `Tipo ${tipos_pokemon[nombre_tipo][1]}`;
 
   div_tipo.classList.add(nombre_tipo, "tipo");
-  texto_tipo.innerText = traduccion_tipos[nombre_tipo];
+  texto_tipo.innerText = tipos_pokemon[nombre_tipo][1];
 
   div_tipo.appendChild(texto_tipo);
 }
@@ -166,31 +166,22 @@ async function crearImagen(url: string, imagenHTML: HTMLImageElement) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  let cuadro_busqueda = document.querySelector<HTMLInputElement>("#cuadro_busqueda");
+  let busqueda = document.querySelector<HeaderBusqueda>("#hBusqueda")!;
 
-  document.querySelector<HTMLButtonElement>("#boton_busqueda")?.addEventListener("click", () => {
-    cuadro_busqueda?.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
-  })
+  busqueda.funcionBusqueda = (el) => {
 
-  cuadro_busqueda?.addEventListener("keyup", function () {
-    this.value = this.value.toLowerCase();
-  });
-
-  cuadro_busqueda?.addEventListener("keypress", function (evento) {
-    if (evento.key == "Enter") {
-      if (this.value.length == 0 || this.value.trim() == "") {
-        mostrarInfo("Por favor introduce un pokemon o ID");
-        return;
-      }
-
-      let imagenes = document.querySelector("#imagenes")
-      if (imagenes) {
-        eliminarContenido(imagenes);
-      }
-
-      buscarPokemon(this.value);
+    if (el.value.length == 0 || el.value.trim() == "") {
+      mostrarInfo("Por favor introduce un pokemon o ID");
+      return;
     }
-  });
+
+    let imagenes = document.querySelector("#imagenes")
+    if (imagenes) {
+      eliminarContenido(imagenes);
+    }
+
+    buscarPokemon(el.value);
+  }
 });
 
 function crearBotonGrito(gritosPokemon: PokemonCries): HTMLButtonElement {
