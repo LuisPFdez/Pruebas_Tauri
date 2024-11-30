@@ -1,7 +1,6 @@
-// import style from "./header-busqueda.css";
-let template = document.createElement("template");
+let templateHeader = document.createElement("template");
 
-template.innerHTML = `
+templateHeader.innerHTML = `
 <header id="busqueda">
     <link rel="stylesheet" href="/src/components/header-busqueda.css" />
     <input type="text" id="cuadro_busqueda">
@@ -11,7 +10,6 @@ template.innerHTML = `
 
 class HeaderBusqueda extends HTMLElement {
     _funcionBusqueda: (event: HTMLInputElement) => void;
-    _contenidoBoton: string | null;
 
     public get placeholder(): string | null {
         return this.getAttribute("placeholder");
@@ -22,12 +20,11 @@ class HeaderBusqueda extends HTMLElement {
     }
 
     public get contenidoBoton(): string | null {
-        return this._contenidoBoton;
+        return this.getAttribute("contenido-boton");
     }
 
     public set contenidoBoton(contenidoBoton: string) {
-        this._contenidoBoton = contenidoBoton;
-        this.actualizarContenidoBoton();
+        this.setAttribute("contenido-boton", contenidoBoton);
     }
 
     public get funcionBusqueda(): Function {
@@ -42,24 +39,22 @@ class HeaderBusqueda extends HTMLElement {
         return ['placeholder', "contenido-boton"];
     }
 
-    attributeChangedCallback(nombre: string, _valorAntiguo: string, valor: string) {
+    constructor() {
+        super();
+        this._funcionBusqueda = () => { };
+    }
+
+    attributeChangedCallback(nombre: string) {
+        console.log("nombre", nombre);
         if (nombre == "placeholder") {
             this.actualizarPlaceHolder()
         } else if (nombre == "contenido-boton") {
-            console.log("prueabs")
-            this._contenidoBoton = valor;
             this.actualizarContenidoBoton();
         }
     }
 
-    constructor() {
-        super();
-        this._funcionBusqueda = () => { };
-        this._contenidoBoton = null;
-    }
-
     connectedCallback() {
-        this.append(template.content.cloneNode(true));
+        this.append(templateHeader.content.cloneNode(true));
 
         if (this.hasAttribute("placeholder")) {
             this.actualizarPlaceHolder();
@@ -69,17 +64,17 @@ class HeaderBusqueda extends HTMLElement {
             this.actualizarContenidoBoton()
         }
 
-        let cuadro_busqueda = document.querySelector<HTMLInputElement>("#cuadro_busqueda");
+        let cuadro_busqueda = document.querySelector<HTMLInputElement>("#cuadro_busqueda")!;
 
-        document.querySelector<HTMLButtonElement>("#boton_busqueda")?.addEventListener("click", () => {
-            cuadro_busqueda?.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
+        document.querySelector<HTMLButtonElement>("#boton_busqueda")!.addEventListener("click", () => {
+            cuadro_busqueda.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
         })
 
-        cuadro_busqueda?.addEventListener("keyup", function () {
+        cuadro_busqueda.addEventListener("keyup", function () {
             this.value = this.value.toLowerCase();
         });
 
-        cuadro_busqueda?.addEventListener("keypress", (evento) => {
+        cuadro_busqueda.addEventListener("keypress", (evento) => {
             if (evento.key == "Enter") {
                 this._funcionBusqueda(cuadro_busqueda);
             }
@@ -98,8 +93,7 @@ class HeaderBusqueda extends HTMLElement {
         let input = this.querySelector<HTMLInputElement>("#boton_busqueda");
 
         if (input) {
-            console.log("Hola", this._contenidoBoton);
-            input.innerHTML = this._contenidoBoton ? `<span>${this._contenidoBoton}</span>`: "";
+            input.innerHTML = this.getAttribute("contenido-boton") ? `<span>${this.getAttribute("contenido-boton")}</span>` : "";
         }
     }
 }
