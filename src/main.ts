@@ -5,6 +5,7 @@ import { trace, info, error, attachConsole } from "tauri-plugin-log-api";
 import { tipos_pokemon } from "./assets/iconos";
 import { capitalizarPrimeraLetra, eliminarContenido, enviarDatosVentana, fetchData } from "./utils";
 import { paletaColoresType } from "./interfaces/tipos";
+import { CuadroTipo } from "./components/cuadro-tipos";
 
 const ancho_sprite = 300;
 const alto_sprite = 300;
@@ -126,7 +127,7 @@ function crearTarjetaPokemon(datosPokemon: Pokemon, descripcion: Array<FlavorTex
   seccion_tipos.classList.add("area_tipos");
   eliminarContenido(seccion_tipos);
   datosPokemon.types.forEach(tipo => {
-    crearTipo(tipo, seccion_tipos);
+    seccion_tipos.appendChild(new CuadroTipo(tipo.type.name));
   });
 
   return area_tarjeta;

@@ -30,21 +30,36 @@ export class CuadroTipo extends HTMLElement {
     }
 
     get modoImagen(): boolean {
+        console.log(this.hasAttribute("modo-imagen"));
         return this.hasAttribute("modo-imagen");
     }
 
-    static get observedAttributes() {
-        return ["tipo", "modo-imagen"];
+    set cambiarOnHover(cambiarModoOnHover: boolean) {
+        if (cambiarModoOnHover) {
+            this.setAttribute("cambiar-on-hover", "");
+        } else {
+            this.removeAttribute("cambiar-on-hover");
+        }
     }
 
-    constructor(tipo?: string, modoImagen?: boolean) {
+    get cambiarOnHover(): boolean {
+        console.log(this.hasAttribute("cambiar-on-hover"));
+        return this.hasAttribute("cambiar-on-hover");
+    }
+
+    static get observedAttributes() {
+        return ["tipo", "modo-imagen", "cambiar-on-hover"];
+    }
+
+    constructor(tipo?: string, modoImagen?: boolean, cambiarOnHover?: boolean) {
         super();
         this._tipo = tipo || "normal";
-        this.modoImagen = modoImagen || false;
+        this.modoImagen = modoImagen || this.modoImagen;
+        this.cambiarOnHover = cambiarOnHover || this.cambiarOnHover;
     }
 
     attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
-        if(name == "tipo"){
+        if (name == "tipo") {
             this._tipo = newValue;
             this.actualizarTipo(newValue);
         }
@@ -53,6 +68,7 @@ export class CuadroTipo extends HTMLElement {
     }
 
     connectedCallback() {
+        console.log("Hola");
         let shadow = this.attachShadow({ mode: "open" });
         shadow.append(templateCuadro.content.cloneNode(true));
         this.actualizarTipo(this._tipo);
@@ -69,25 +85,31 @@ export class CuadroTipo extends HTMLElement {
 
         console.log("tipo", tipo);
         section.classList.add(tipo);
-        section.title = `Tipo ${tipo_pokemon[1]}`;
+        
         img.src = tipo_pokemon[0];
         img.alt = `Tipo ${tipo_pokemon[1]}`;
     }
 
     actualizarModoImagen() {
         if (this.shadowRoot == null) return;
+        let tipo_pokemon = tipos_pokemon[this._tipo];
 
         let span = this.shadowRoot.querySelector<HTMLSpanElement>("span") || document.createElement("span");
         let section = this.shadowRoot.querySelector<HTMLElement>("section")!;
         if (this.modoImagen) {
-            section.style.width = "40px";
-            section.style.height = "40px";
-            section.style.gap = "0";
-            span.remove();
+            if(this.cambiarOnHover) {
+                console.log("1")
+                section.appendChild(span);
+                span.innerText = tipo_pokemon[1];
+                section.classList.add("cambioOnHover");
+            } else {
+                section.title = `Tipo ${tipo_pokemon[1]}`;
+                span.remove();
+                section.classList.remove("cambioOnHover");
+            }
         } else {
-            section.style.width = "";
-            section.style.height = "";
-            section.style.gap = "";
+            console.log("3")
+            //En principio por 
             section.appendChild(span)
             span.innerText = tipos_pokemon[this._tipo][1];
         }

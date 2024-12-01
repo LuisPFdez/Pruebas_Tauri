@@ -3,81 +3,112 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px; 
+  gap: 0;
   border-radius: 50px;
-  margin-bottom: 15px; 
+  margin-bottom: 15px;
+  width: 40px;
+  height: 40px;
+}
+
+.tipo:has(span):not(.cambioOnHover){
   width: 125px;
+  gap: 10px;
+}
+
+.cambioOnHover {
+  transition: width 1s ease;
+  overflow: hidden;
+  justify-content: initial;
+  gap: 10px;
+}
+
+.cambioOnHover:hover {
+  width: 125px;
+}
+
+.cambioOnHover img{
+    margin: 5px;
+}
+
+.cambioOnHover span{
+  opacity:  0;
+  white-space: nowrap;
+  transition: opacity 1s ease;
+}
+
+.cambioOnHover:hover span{
+  opacity: 1;
 }
 
 /*Colores de cada tipo*/
 .bug {
-    background: #92BC2C;
-  }
-  
-  .dark {
-    background: #595761;
-  }
-  
-  .dragon {
-    background: #0C69C8;
-  }
-  
-  .electric {
-    background: #F2D94E;
-  }
-  
-  .fire {
-    background: #FBA54C;
-  }
-  
-  .fairy {
-    background: #EE90E6;
-  }
-  
-  .fighting {
-    background: #D3425F;
-  }
-  
-  .flying {
-    background: #A1BBEC;
-  }
-  
-  .ghost {
-    background: #5F6DBC;
-  }
-  
-  .grass {
-    background: #5FBD58;
-  }
-  
-  .ground {
-    background: #DA7C4D;
-  }
-  
-  .ice {
-    background: #75D0C1;
-  }
-  
-  .normal {
-    background: #A0A29F;
-  }
-  
-  .poison {
-    background: #B763CF;
-  }
-  
-  .psychic {
-    background: #FA8581;
-  }
-  
-  .rock {
-    background: #C9BB8A;
-  }
-  
-  .steel {
-    background: #5695A3;
-  }
-  
-  .water {
-    background: #539DDF;
-  }
+  background: #92BC2C;
+}
+
+.dark {
+  background: #595761;
+}
+
+.dragon {
+  background: #0C69C8;
+}
+
+.electric {
+  background: #F2D94E;
+}
+
+.fire {
+  background: #FBA54C;
+}
+
+.fairy {
+  background: #EE90E6;
+}
+
+.fighting {
+  background: #D3425F;
+}
+
+.flying {
+  background: #A1BBEC;
+}
+
+.ghost {
+  background: #5F6DBC;
+}
+
+.grass {
+  background: #5FBD58;
+}
+
+.ground {
+  background: #DA7C4D;
+}
+
+.ice {
+  background: #75D0C1;
+}
+
+.normal {
+  background: #A0A29F;
+}
+
+.poison {
+  background: #B763CF;
+}
+
+.psychic {
+  background: #FA8581;
+}
+
+.rock {
+  background: #C9BB8A;
+}
+
+.steel {
+  background: #5695A3;
+}
+
+.water {
+  background: #539DDF;
+}
