@@ -68,7 +68,6 @@ export class CuadroTipo extends HTMLElement {
     }
 
     connectedCallback() {
-        console.log("Hola");
         let shadow = this.attachShadow({ mode: "open" });
         shadow.append(templateCuadro.content.cloneNode(true));
         this.actualizarTipo(this._tipo);
@@ -83,9 +82,8 @@ export class CuadroTipo extends HTMLElement {
 
         let tipo_pokemon = tipos_pokemon[tipo];
 
-        console.log("tipo", tipo);
         section.classList.add(tipo);
-        
+
         img.src = tipo_pokemon[0];
         img.alt = `Tipo ${tipo_pokemon[1]}`;
     }
@@ -97,8 +95,7 @@ export class CuadroTipo extends HTMLElement {
         let span = this.shadowRoot.querySelector<HTMLSpanElement>("span") || document.createElement("span");
         let section = this.shadowRoot.querySelector<HTMLElement>("section")!;
         if (this.modoImagen) {
-            if(this.cambiarOnHover) {
-                console.log("1")
+            if (this.cambiarOnHover) {
                 section.appendChild(span);
                 span.innerText = tipo_pokemon[1];
                 section.classList.add("cambioOnHover");
@@ -108,8 +105,6 @@ export class CuadroTipo extends HTMLElement {
                 section.classList.remove("cambioOnHover");
             }
         } else {
-            console.log("3")
-            //En principio por 
             section.appendChild(span)
             span.innerText = tipos_pokemon[this._tipo][1];
         }
