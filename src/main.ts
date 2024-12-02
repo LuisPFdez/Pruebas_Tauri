@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen, emit } from "@tauri-apps/api/event";
-import { ConfirmDialogOptions, confirm, message, MessageDialogOptions } from "@tauri-apps/api/dialog";
+import { ConfirmDialogOptions, confirm } from "@tauri-apps/api/dialog";
 import { trace, info, error, attachConsole } from "tauri-plugin-log-api";
 import { tipos_pokemon } from "./assets/iconos";
-import { capitalizarPrimeraLetra, eliminarContenido, enviarDatosVentana, fetchData } from "./utils";
+import { buscarPokemon, capitalizarPrimeraLetra, eliminarContenido, enviarDatosVentana, fetchData, mostrarInfo } from "./utils";
 import { paletaColoresType } from "./interfaces/tipos";
 import { CuadroTipo } from "./components/cuadro-tipos";
 
@@ -34,16 +34,6 @@ async function log() {
 
   //Para dejar de escuchar los eventos bastara con ejecutar la funcion que retorna listen()
   evento();
-}
-
-function mostrarInfo(mensaje: string, titulo?: string) {
-  let opcionesDialogo: MessageDialogOptions = {
-    okLabel: "Cerrar",
-    title: titulo,
-    type: "info"
-  }
-
-  message(mensaje, opcionesDialogo);
 }
 
 listen("cerrar_ventanas", async (_) => {
@@ -181,7 +171,17 @@ window.addEventListener("DOMContentLoaded", () => {
       eliminarContenido(imagenes);
     }
 
-    buscarPokemon(el.value);
+    buscarPokemon(el.value, function (datosEspecies) {
+      especiePokemon = datosEspecies;
+      //Busca el valor por defecto de una especie, aunque no deberia deberia de haber al menos 1 a true, en caso contrario, devuelve el primer valor
+      let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
+      fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
+        let area_imagen = document.querySelector<HTMLDivElement>("#imagenes");
+
+        let cartaPokemon = crearTarjetaPokemon(datos, datosEspecies.flavor_text_entries);
+        area_imagen?.appendChild(cartaPokemon);
+      });
+    });
   }
 });
 
@@ -268,47 +268,3 @@ async function crearBotonComparador(datosPokemon: Pokemon): Promise<HTMLButtonEl
 
   return botonComparador;
 }
-
-/**
- * Busca un pokemon en la api y recupera toda la informacion de este
- * @param pokemon
- */
-function buscarPokemon(pokemon: string): void {
-  fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon}`)
-    .then(data => {
-      if (data.status != 200) {
-        let razon: string;
-        let mostrarRazon: boolean = false;
-        switch (data.status) {
-          case 404:
-            razon = "Nombre de pokemon o ID incorrecto";
-            mostrarRazon = true;
-            break;
-          default:
-            razon = `Error ${data.status}. ${data.statusText}`;
-            break;
-        }
-        return Promise.reject({ mostrarRazon, razon });
-      }
-      return data.json() as Promise<PokemonSpecies>;
-    })
-    .then((datosEspecies) => {
-      especiePokemon = datosEspecies;
-      //Busca el valor por defecto de una especie, aunque no deberia deberia de haber al menos 1 a true, en caso contrario, devuelve el primer valor
-      let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
-      fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
-        let area_imagen = document.querySelector<HTMLDivElement>("#imagenes");
-
-        let cartaPokemon = crearTarjetaPokemon(datos, datosEspecies.flavor_text_entries);
-        area_imagen?.appendChild(cartaPokemon);
-      });
-    })
-    .catch((e: { mostrarRazon: boolean, razon: string }) => {
-      let { mostrarRazon, razon } = e;
-      error(`Error al buscar: ${razon}`);
-      if (mostrarRazon) {
-        mostrarInfo(razon);
-      }
-    });
-}
-

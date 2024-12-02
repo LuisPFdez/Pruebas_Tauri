@@ -1,14 +1,17 @@
 
 import { invoke } from "@tauri-apps/api";
-import { ejecutarFuncionAlCargarDoc, eventoVentanaCargada, fetchData } from "./utils";
-import { abreviaturas_stats, tipos_pokemon, traduccion_stats, traduccion_tipos } from "./assets/iconos";
-import { mapaDebilidades, objetoDebilidades } from "./interfaces/tipos";
+import { buscarPokemon, ejecutarFuncionAlCargarDoc, eventoVentanaCargada, fetchData } from "./utils";
+import { abreviaturas_stats, tipos_pokemon, traduccion_stats } from "./assets/iconos";
+import { mapaDebilidades } from "./interfaces/tipos";
+import { CuadroTipo } from "./components/cuadro-tipos";
 
 interface datosEvento {
     datosPokemon: Pokemon;
 }
 
-let pokemon1: Pokemon;
+let pokemon1: Pokemon | undefined;
+
+window.addEventListener("DOMContentLoaded", () => domCargado());
 
 eventoVentanaCargada((evento) => {
     pokemon1 = (evento.payload as datosEvento).datosPokemon;
@@ -17,24 +20,27 @@ eventoVentanaCargada((evento) => {
 })
 
 function domCargado() {
-    mostrarEstadisticas(pokemon1);
-    return;
-    let cuadro_busqueda = document.getElementById("cuadro_busqueda")! as HTMLInputElement;
-    cuadro_busqueda.placeholder = "Introduce el nombre o el id para comparar. Pulsa \u{21B5} para buscar";
+    if(pokemon1) {
+        mostrarEstadisticas(pokemon1);
+    }
+    
+    let busqueda = document.getElementById("hBusqueda") as HeaderBusqueda;
 
-    document.querySelector<HTMLButtonElement>("#boton_busqueda")?.addEventListener("click", () => {
-        cuadro_busqueda?.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
-    })
+    if(!busqueda) throw new Error("El cuadro de busqueda deberia de estar creado");
 
-    cuadro_busqueda?.addEventListener("keyup", function () {
-        this.value = this.value.toLowerCase();
-    });
+    busqueda.placeholder = "Pulsa enter para buscar";
+    busqueda.contenidoBoton = "#";
 
-    cuadro_busqueda?.addEventListener("keypress", function (evento) {
-        if (evento.key == "Enter") {
-                
-        }
-    })
+    busqueda.funcionBusqueda = (el) => {
+        buscarPokemon(el.value, function(datosEspecies) {
+            let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
+
+            fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
+                console.log("Pokemon busqueda", datos);
+                mostrarEstadisticas(datos);
+            })
+        })
+    }
 }
 
 function mostrarEstadisticas(pokemon:Pokemon) {
@@ -76,6 +82,8 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     seccionGeneral.appendChild(imagen);
     seccionGeneral.appendChild(seccionTipos);
     
+    //TODO bug, realiza la busqueda correctamente pero no carga bien la imagen
+    //Este localStorage, es la causa
     let arrayImagenString = localStorage.getItem("ArrayImagen");
 
     if (arrayImagenString != null) {
@@ -105,17 +113,16 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
         p.innerText = `${estadisticasNombre[index]}: ${val.toFixed(2)}`;
     })
 
-    let debilidades: Array<TypeRelations> = []; 
+    let promesasDebilidades:Array<Promise<Type>> = [];
     
-    pokemon.types.forEach(async (tipo) => {
-        crearTipo(tipo.type.name, seccionTipos);
+    pokemon.types.forEach(async (tipo, index) => {
+        seccionTipos.appendChild(new CuadroTipo(tipo.type.name, true));
+        promesasDebilidades[index] = fetchData<Type>(tipo.type.url);
     })
-    
-    debilidades[0] = (await fetchData<Type>(pokemon.types[0].type.url)).damage_relations;
 
-    if(pokemon.types.length == 2 ) {
-        debilidades[1] = (await fetchData<Type>(pokemon.types[1].type.url)).damage_relations;
-    }
+    let debilidades: Array<TypeRelations> = (await Promise.all(promesasDebilidades)).map((val: Type) => {
+        return val.damage_relations;
+    })
 
     let seccionResistencias = document.createElement("section");
     seccionPokemon.appendChild(seccionResistencias);
@@ -127,7 +134,6 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
 
 function mostrarDebilidades(debilidades: TypeRelations[], seccionResistencias: HTMLElement) {
     let debilidadesMap = calcularDebilidades(debilidades);
-    console.log(debilidadesMap);
     let clasesDebilidades: Record<number, string> = {
         4: "superEfectivo",
         2: "efectivo",
@@ -148,7 +154,7 @@ function crearSeccionResistencias(clase: string, valores: string[] ): HTMLElemen
     element.classList.add(clase);
 
     valores.forEach(val => {
-        crearTipo(val, element);
+        element.appendChild(new CuadroTipo(val, true));
     })
 
     return element;
@@ -216,23 +222,6 @@ function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]
     return debilidadesAgrupadas;
 }
 
-//En un futuro se modularizara esta funcion, es una solucion temporal
-function crearTipo(nombre_tipo: string, seccion_tipos: HTMLElement) {
-    let div_tipo = document.createElement("div");
-    let imagen_tipo = new Image(30, 30);
-    let texto_tipo = document.createElement("span");
-  
-    seccion_tipos.appendChild(div_tipo).appendChild(imagen_tipo);
-  
-    imagen_tipo.src = tipos_pokemon[nombre_tipo];
-    imagen_tipo.alt = `Tipo ${traduccion_tipos[nombre_tipo]}`;
-  
-    div_tipo.classList.add(nombre_tipo, "tipo");
-    texto_tipo.innerText = traduccion_tipos[nombre_tipo];
-  
-    div_tipo.appendChild(texto_tipo);
-  }
-
 function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: PokemonStat) {
     let stElement = document.createElement("section");
     elementoContenedor.appendChild(stElement);
@@ -266,7 +255,9 @@ async function crearImagen(arrayImagen: number[], imagen: HTMLImageElement) {
     imagen.src = URL.createObjectURL(new Blob([datosImagen.buffer], { type: "image/png" }));
 }
 
-
+window.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("hola")
+})
 
 
 // TODO Modularizar la busqueda
