@@ -1,6 +1,6 @@
 
 import { invoke } from "@tauri-apps/api";
-import { buscarPokemon, ejecutarFuncionAlCargarDoc, eventoVentanaCargada, fetchData } from "./utils";
+import { arrayFromURL, buscarPokemon, ejecutarFuncionAlCargarDoc, eventoVentanaCargada, fetchData } from "./utils";
 import { abreviaturas_stats, tipos_pokemon, traduccion_stats } from "./assets/iconos";
 import { mapaDebilidades } from "./interfaces/tipos";
 import { CuadroTipo } from "./components/cuadro-tipos";
@@ -10,6 +10,7 @@ interface datosEvento {
 }
 
 let pokemon1: Pokemon | undefined;
+let arrayImagen: number[] | undefined;
 
 window.addEventListener("DOMContentLoaded", () => domCargado());
 
@@ -20,19 +21,28 @@ eventoVentanaCargada((evento) => {
 })
 
 function domCargado() {
-    if(pokemon1) {
+    if (pokemon1) {
+        let arrayImagenString = localStorage.getItem("ArrayImagen");
+
+        if (arrayImagenString != null) {
+            arrayImagen = arrayImagenString.split(",").map((val) => Number(val));
+            localStorage.removeItem("ArrayImagen");
+        }
+
         mostrarEstadisticas(pokemon1);
+
+
     }
-    
+
     let busqueda = document.getElementById("hBusqueda") as HeaderBusqueda;
 
-    if(!busqueda) throw new Error("El cuadro de busqueda deberia de estar creado");
+    if (!busqueda) throw new Error("El cuadro de busqueda deberia de estar creado");
 
     busqueda.placeholder = "Pulsa enter para buscar";
     busqueda.contenidoBoton = "#";
 
     busqueda.funcionBusqueda = (el) => {
-        buscarPokemon(el.value, function(datosEspecies) {
+        buscarPokemon(el.value, function (datosEspecies) {
             let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
 
             fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
@@ -43,59 +53,56 @@ function domCargado() {
     }
 }
 
-function mostrarEstadisticas(pokemon:Pokemon) {
-    
+function mostrarEstadisticas(pokemon: Pokemon) {
+
     let total = 0;
     let desviacion = 0;
     let media = 0;
-    
+
     pokemon.stats.forEach((val) => {
         total += val.base_stat;
     });
-    
+
     media = total / pokemon.stats.length;
-    
-    pokemon.stats.forEach( val => {
+
+    pokemon.stats.forEach(val => {
         desviacion += Math.pow(val.base_stat - media, 2);
     });
-    
+
     desviacion = Math.sqrt(desviacion / pokemon.stats.length);
-    if(!document.getElementById(pokemon.id.toString())){
+    if (!document.getElementById(pokemon.id.toString())) {
         fichaPokemon(pokemon, [total, media, desviacion]);
     }
 }
 
 async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, number]) {
     let main = document.querySelector<HTMLElement>("main")!;
-    
+
 
     let seccionPokemon = document.createElement("section");
-    
+
     seccionPokemon.classList.add("seccionPokemon");
     seccionPokemon.id = pokemon.id.toString();
-    
+
     let imagen = document.createElement("img")
     let seccionTipos = document.createElement("section");
     let seccionGeneral = document.createElement("section");
     seccionPokemon.appendChild(seccionGeneral);
-    
+
     seccionGeneral.appendChild(imagen);
     seccionGeneral.appendChild(seccionTipos);
-    
-    //TODO bug, realiza la busqueda correctamente pero no carga bien la imagen
-    //Este localStorage, es la causa
-    let arrayImagenString = localStorage.getItem("ArrayImagen");
+    imagen.style.margin = "auto";
 
-    if (arrayImagenString != null) {
-        let arrayImagen = arrayImagenString.split(",").map((val) => Number(val));
-
+    if (arrayImagen == undefined) {
+        let arrayImagen = await arrayFromURL(pokemon.sprites.front_default);
         await crearImagen(arrayImagen, imagen);
     }
 
     let seccionEstadistica = document.createElement("section");
     seccionPokemon.appendChild(seccionEstadistica);
     seccionEstadistica.style.display = "flex";
-    seccionEstadistica.style.marginTop = "10px";
+    seccionEstadistica.style.justifyContent = "center";
+
 
     pokemon.stats.forEach((val) => {
         anyadirEstadistica(seccionEstadistica, val);
@@ -113,8 +120,9 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
         p.innerText = `${estadisticasNombre[index]}: ${val.toFixed(2)}`;
     })
 
-    let promesasDebilidades:Array<Promise<Type>> = [];
-    
+    let promesasDebilidades: Array<Promise<Type>> = [];
+    seccionTipos.classList.add("seccionTipos");
+
     pokemon.types.forEach(async (tipo, index) => {
         seccionTipos.appendChild(new CuadroTipo(tipo.type.name, true));
         promesasDebilidades[index] = fetchData<Type>(tipo.type.url);
@@ -127,41 +135,49 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     let seccionResistencias = document.createElement("section");
     seccionPokemon.appendChild(seccionResistencias);
     mostrarDebilidades(debilidades, seccionResistencias);
-    
+
     main.style.gridTemplateColumns = "300px ".repeat(main.childElementCount + 1);
     main.appendChild(seccionPokemon);
 }
 
 function mostrarDebilidades(debilidades: TypeRelations[], seccionResistencias: HTMLElement) {
     let debilidadesMap = calcularDebilidades(debilidades);
-    let clasesDebilidades: Record<number, string> = {
-        4: "superEfectivo",
-        2: "efectivo",
-        1: "normal",
-        0.5: "resistente",
-        0.25: "superResistente",
-        0: "inume"
+    let clasesDebilidades: Record<number, [string, string]> = {
+        4: ["secSE", "4x"],
+        2: ["secEfec", "2x"],
+        1: ["secNor", "1x"],
+        0.5: ["secRes", "1/2x"],
+        0.25: ["secSR", "1/4x"],
+        0: ["secInm", "0x"]
     }
 
-    for (const [clave, valores] of debilidadesMap.entries()) {
+    let sortDeb = Array.from(debilidadesMap.entries()).sort((a, b) => b[0] - a[0]);
+
+    sortDeb.forEach(([clave, valores]) => {
         seccionResistencias.appendChild(crearSeccionResistencias(clasesDebilidades[clave], valores));
-    }
-    
+    })
+
 }
 
-function crearSeccionResistencias(clase: string, valores: string[] ): HTMLElement {
+function crearSeccionResistencias(clase: [string, string], valores: string[]): HTMLElement {
     let element = document.createElement("section");
-    element.classList.add(clase);
+    let tipos = document.createElement("section");
+    let h4 = document.createElement("h4");
+
+    element.classList.add(clase[0], "secDebilidades");
+    h4.innerText = `Recibe ${clase[1]} de daño de:`;
+    element.appendChild(h4);
+    element.appendChild(tipos);
 
     valores.forEach(val => {
-        element.appendChild(new CuadroTipo(val, true));
+        tipos.appendChild(new CuadroTipo(val, true, true));
     })
 
     return element;
 }
 
 function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]> {
-    let  objectToMap = (debilidad: TypeRelations, mapaDebilidad: mapaDebilidades) => {
+    let objectToMap = (debilidad: TypeRelations, mapaDebilidad: mapaDebilidades) => {
         debilidad.double_damage_from.map((val) => {
             mapaDebilidad.set(val.name, 2);
         });
@@ -175,7 +191,7 @@ function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]
         });
     }
 
-    let calcularFactor= (mapaDeb1: mapaDebilidades, mapaDeb2: mapaDebilidades, mapaFactores: mapaDebilidades) => {
+    let calcularFactor = (mapaDeb1: mapaDebilidades, mapaDeb2: mapaDebilidades, mapaFactores: mapaDebilidades) => {
         mapaDeb1.forEach((factor, tipo) => {
             let factor2 = mapaDeb2.get(tipo) || 1;
 
@@ -187,12 +203,12 @@ function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]
     let tipos = Object.keys(tipos_pokemon);
 
     //https://github.com/yashrajbharti/Pokemon-Type-Weakness-Calculator/blob/main/script.js
-    if(debilidades.length == 2) {
+    if (debilidades.length == 2) {
         let deb1 = debilidades[0];
         let deb2 = debilidades[1];
 
-        let mapDeb1:mapaDebilidades = new Map();
-        let mapDeb2:mapaDebilidades = new Map();
+        let mapDeb1: mapaDebilidades = new Map();
+        let mapDeb2: mapaDebilidades = new Map();
 
         objectToMap(deb1, mapDeb1);
         objectToMap(deb2, mapDeb2);
@@ -202,11 +218,11 @@ function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]
 
     } else {
         let deb1 = debilidades[0];
-       objectToMap(deb1, debilidadesFinal);
+        objectToMap(deb1, debilidadesFinal);
     }
 
     tipos.forEach((val) => {
-        if(!debilidadesFinal.has(val)){
+        if (!debilidadesFinal.has(val)) {
             debilidadesFinal.set(val, 1);
         }
     })
@@ -242,13 +258,13 @@ function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: Pokemo
     stPorcentaje.appendChild(stSpan);
 
     let porcentajeAltura = (estadistica.base_stat * 100 / 255);
-    stSpan.style.height =  porcentajeAltura + "%";
-    stSpan.style.top = (100 - porcentajeAltura)  + "%";
+    stSpan.style.height = porcentajeAltura + "%";
+    stSpan.style.top = (100 - porcentajeAltura) + "%";
     stValor.innerText = estadistica.base_stat.toString();
     stTitulo.innerText = abreviaturas_stats[estadistica.stat.name];
     stTitulo.title = traduccion_stats[estadistica.stat.name];
 
-} 
+}
 
 async function crearImagen(arrayImagen: number[], imagen: HTMLImageElement) {
     let datosImagen = Int8Array.from(await invoke("redimensionar_imagen", { imagen: arrayImagen, ancho: 200, alto: 200 }) as number[]);
@@ -258,44 +274,3 @@ async function crearImagen(arrayImagen: number[], imagen: HTMLImageElement) {
 window.addEventListener("DOMContentLoaded", () => {
     document.querySelector("hola")
 })
-
-
-// TODO Modularizar la busqueda
-// async function buscarPokemon(pokemon: string) {
-//     fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon}`)
-//     .then(data => {
-//       if (data.status != 200) {
-//         let razon: string;
-//         let mostrarRazon: boolean = false;
-//         switch (data.status) {
-//           case 404:
-//             razon = "Nombre de pokemon o ID incorrecto";
-//             mostrarRazon = true;
-//             break;
-//           default:
-//             razon = `Error ${data.status}. ${data.statusText}`;
-//             break;
-//         }
-//         return Promise.reject({mostrarRazon, razon});
-//       }
-//       return data.json() as Promise<PokemonSpecies>;
-//     })
-//     .then((datosEspecies) => {
-//       especiePokemon = datosEspecies;
-//       //Busca el valor por defecto de una especie, aunque no deberia deberia de haber al menos 1 a true, en caso contrario, devuelve el primer valor
-//       let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
-//       fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
-//         let area_imagen = document.querySelector<HTMLDivElement>("#imagenes");
-       
-//         let cartaPokemon = crearTarjetaPokemon(datos, datosEspecies.flavor_text_entries);
-//         area_imagen?.appendChild(cartaPokemon);
-//       });
-//     })
-//     .catch((e: {mostrarRazon: boolean, razon: string}) => {
-//         let {mostrarRazon, razon} = e;
-//         error(`Error al buscar: ${razon}`);
-//         if(mostrarRazon) {
-//           mostrarInfo(razon);
-//         }
-//     });
-// }

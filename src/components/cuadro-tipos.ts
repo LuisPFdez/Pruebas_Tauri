@@ -1,3 +1,4 @@
+import { once } from "@tauri-apps/api/event";
 import { tipos_pokemon } from "../assets/iconos";
 
 let templateCuadro = document.createElement("template");
@@ -12,6 +13,9 @@ templateCuadro.innerHTML = `
 
 export class CuadroTipo extends HTMLElement {
     private _tipo: string;
+    private hover: boolean;
+    private posicionRaton: [number, number];
+
     set tipo(tipo: string) {
         this._tipo = tipo;
         this.setAttribute("tipo", tipo);
@@ -30,7 +34,6 @@ export class CuadroTipo extends HTMLElement {
     }
 
     get modoImagen(): boolean {
-        console.log(this.hasAttribute("modo-imagen"));
         return this.hasAttribute("modo-imagen");
     }
 
@@ -43,7 +46,6 @@ export class CuadroTipo extends HTMLElement {
     }
 
     get cambiarOnHover(): boolean {
-        console.log(this.hasAttribute("cambiar-on-hover"));
         return this.hasAttribute("cambiar-on-hover");
     }
 
@@ -53,6 +55,9 @@ export class CuadroTipo extends HTMLElement {
 
     constructor(tipo?: string, modoImagen?: boolean, cambiarOnHover?: boolean) {
         super();
+        this.hover = false;
+        this.posicionRaton = [0, 0];
+
         this._tipo = tipo || "normal";
         this.modoImagen = modoImagen || this.modoImagen;
         this.cambiarOnHover = cambiarOnHover || this.cambiarOnHover;
@@ -99,6 +104,37 @@ export class CuadroTipo extends HTMLElement {
                 section.appendChild(span);
                 span.innerText = tipo_pokemon[1];
                 section.classList.add("cambioOnHover");
+                section.addEventListener("mouseenter", (ev) => {
+                    if (!this.hover) {
+                        this.posicionRaton = [ev.pageX, ev.pageY];
+                        console.log("mouseEnter", this.posicionRaton.toString(), ev);
+                        this.hover = true;
+                        section.classList.add("hover");
+                    }
+
+                });
+
+                section.addEventListener("mouseleave", (ev) => {
+                    let [x1Post, x2Post] = [this.posicionRaton[0] - 10, this.posicionRaton[0] + 10];
+                    let [y1Post, y2Post] = [this.posicionRaton[0] - 10, this.posicionRaton[1] + 10];
+                    console.log("Props X", x1Post, x2Post, "Props EV y", y1Post, y2Post);
+                    console.log("Props EV X", ev.pageX, "Props EV y", ev.pageY);
+                    console.log("X", x1Post > ev.pageX || x2Post < ev.pageX);
+                    console.log("Y",  y1Post > ev.pageY || y2Post < ev.pageY)
+                    if (x1Post > ev.pageX || x2Post < ev.pageX
+                        || y1Post > ev.pageY || y2Post < ev.pageY) {
+                        console.log("Mouse leave in");
+                        section.classList.remove("hover")
+                        this.hover = false;
+                    } else {
+                        window.addEventListener("mousemove", (ev)=> {
+                            let e = new MouseEvent("mouseleave", ev);
+                            section.dispatchEvent(e);
+                        }, {once: true})
+                    }
+                });
+
+                
             } else {
                 section.title = `Tipo ${tipo_pokemon[1]}`;
                 span.remove();

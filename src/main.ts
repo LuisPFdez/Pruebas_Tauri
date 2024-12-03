@@ -3,7 +3,7 @@ import { listen, emit } from "@tauri-apps/api/event";
 import { ConfirmDialogOptions, confirm } from "@tauri-apps/api/dialog";
 import { trace, info, error, attachConsole } from "tauri-plugin-log-api";
 import { tipos_pokemon } from "./assets/iconos";
-import { buscarPokemon, capitalizarPrimeraLetra, eliminarContenido, enviarDatosVentana, fetchData, mostrarInfo } from "./utils";
+import { arrayFromURL, buscarPokemon, capitalizarPrimeraLetra, eliminarContenido, enviarDatosVentana, fetchData, mostrarInfo } from "./utils";
 import { paletaColoresType } from "./interfaces/tipos";
 import { CuadroTipo } from "./components/cuadro-tipos";
 
@@ -140,10 +140,6 @@ function crearTipo(tipo: PokemonType, seccion_tipos: HTMLElement) {
   texto_tipo.innerText = tipos_pokemon[nombre_tipo][1];
 
   div_tipo.appendChild(texto_tipo);
-}
-
-async function arrayFromURL(url: URL | RequestInfo): Promise<Array<number>> {
-  return Array.from(new Uint8Array(await ((await fetch(url)).arrayBuffer())));
 }
 
 async function crearImagen(url: string, imagenHTML: HTMLImageElement) {

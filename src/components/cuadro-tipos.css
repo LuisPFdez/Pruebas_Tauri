@@ -5,7 +5,6 @@
   align-items: center;
   gap: 0;
   border-radius: 50px;
-  margin-bottom: 15px;
   width: 40px;
   height: 40px;
 }
@@ -22,8 +21,9 @@
   gap: 10px;
 }
 
-.cambioOnHover:hover {
+.cambioOnHover.hover {
   width: 125px;
+  white-space: nowrap;
 }
 
 .cambioOnHover img{
@@ -36,7 +36,7 @@
   transition: opacity 1s ease;
 }
 
-.cambioOnHover:hover span{
+.cambioOnHover.hover span{
   opacity: 1;
 }
 
