@@ -121,6 +121,10 @@ function buscarPokemon(pokemon: string, callback: (val: PokemonSpecies) => void)
         });
 }
 
+async function arrayFromURL(url: URL | RequestInfo): Promise<Array<number>> {
+    return Array.from(new Uint8Array(await ((await fetch(url)).arrayBuffer())));
+}
+
 export {
     capitalizarPrimeraLetra,
     ejecutarFuncionAlCargarDoc,
@@ -132,5 +136,6 @@ export {
     eliminarContenido,
     fetchData,
     mostrarInfo,
-    buscarPokemon
+    buscarPokemon,
+    arrayFromURL
 };

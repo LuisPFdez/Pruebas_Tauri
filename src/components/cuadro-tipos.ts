@@ -1,4 +1,3 @@
-import { once } from "@tauri-apps/api/event";
 import { tipos_pokemon } from "../assets/iconos";
 
 let templateCuadro = document.createElement("template");
@@ -107,7 +106,6 @@ export class CuadroTipo extends HTMLElement {
                 section.addEventListener("mouseenter", (ev) => {
                     if (!this.hover) {
                         this.posicionRaton = [ev.pageX, ev.pageY];
-                        console.log("mouseEnter", this.posicionRaton.toString(), ev);
                         this.hover = true;
                         section.classList.add("hover");
                     }
@@ -117,14 +115,9 @@ export class CuadroTipo extends HTMLElement {
                 section.addEventListener("mouseleave", (ev) => {
                     let [x1Post, x2Post] = [this.posicionRaton[0] - 10, this.posicionRaton[0] + 10];
                     let [y1Post, y2Post] = [this.posicionRaton[0] - 10, this.posicionRaton[1] + 10];
-                    console.log("Props X", x1Post, x2Post, "Props EV y", y1Post, y2Post);
-                    console.log("Props EV X", ev.pageX, "Props EV y", ev.pageY);
-                    console.log("X", x1Post > ev.pageX || x2Post < ev.pageX);
-                    console.log("Y",  y1Post > ev.pageY || y2Post < ev.pageY)
                     if (x1Post > ev.pageX || x2Post < ev.pageX
                         || y1Post > ev.pageY || y2Post < ev.pageY) {
-                        console.log("Mouse leave in");
-                        section.classList.remove("hover")
+                        section.classList.remove("hover");
                         this.hover = false;
                     } else {
                         window.addEventListener("mousemove", (ev)=> {

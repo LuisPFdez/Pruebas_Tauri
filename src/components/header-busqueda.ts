@@ -45,7 +45,6 @@ class HeaderBusqueda extends HTMLElement {
     }
 
     attributeChangedCallback(nombre: string) {
-        console.log("nombre", nombre);
         if (nombre == "placeholder") {
             this.actualizarPlaceHolder()
         } else if (nombre == "contenido-boton") {
