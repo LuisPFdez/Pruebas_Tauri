@@ -12,6 +12,8 @@ interface datosEvento {
 let pokemon1: Pokemon | undefined;
 let arrayImagen: number[] | undefined;
 
+let listaPokemon: Array<number> = [];
+
 window.addEventListener("DOMContentLoaded", () => domCargado());
 
 eventoVentanaCargada((evento) => {
@@ -21,6 +23,9 @@ eventoVentanaCargada((evento) => {
 })
 
 function domCargado() {
+    let busqueda = document.getElementById("hBusqueda") as HeaderBusqueda;
+    if (!busqueda) throw new Error("El cuadro de busqueda deberia de estar creado");
+
     if (pokemon1) {
         let arrayImagenString = localStorage.getItem("ArrayImagen");
 
@@ -29,32 +34,41 @@ function domCargado() {
             localStorage.removeItem("ArrayImagen");
         }
 
-        mostrarEstadisticas(pokemon1);
-
-
+        mostrarDatosPokemon(pokemon1, busqueda);
+    } else {
+        busqueda.placeholder = "Introduce el nombre/id del pokemon. Pulsa \u{21B5} para buscar";
+        busqueda.contenidoBoton = "\u{21B5}";
     }
-
-    let busqueda = document.getElementById("hBusqueda") as HeaderBusqueda;
-
-    if (!busqueda) throw new Error("El cuadro de busqueda deberia de estar creado");
-
-    busqueda.placeholder = "Pulsa enter para buscar";
-    busqueda.contenidoBoton = "#";
 
     busqueda.funcionBusqueda = (el) => {
         buscarPokemon(el.value, function (datosEspecies) {
             let pokemon = (datosEspecies.varieties.find(val => val.is_default) || datosEspecies.varieties[0]).pokemon;
 
             fetchData<typeof pokemon.type>(pokemon.url).then(datos => {
-                console.log("Pokemon busqueda", datos);
-                mostrarEstadisticas(datos);
+                mostrarDatosPokemon(datos, busqueda);
             })
+
+            el.value = "";
         })
     }
 }
 
-function mostrarEstadisticas(pokemon: Pokemon) {
+function mostrarDatosPokemon(pokemon: Pokemon, busqueda: HeaderBusqueda) {
+    if (!listaPokemon.includes(pokemon.id)) {
+        listaPokemon.push(pokemon.id);
+        mostrarEstadisticas(pokemon);
+    }
 
+    if (listaPokemon.length > 0) {
+        busqueda.placeholder = "Pulsa + para añadir un pokemon";
+        busqueda.contenidoBoton = "+";
+    } else {
+        busqueda.placeholder = "Introduce el nombre/id del pokemon. Pulsa \u{21B5} para buscar";
+        busqueda.contenidoBoton = "\u{21B5}";
+    }
+}
+
+function mostrarEstadisticas(pokemon: Pokemon) {
     let total = 0;
     let desviacion = 0;
     let media = 0;
@@ -70,19 +84,30 @@ function mostrarEstadisticas(pokemon: Pokemon) {
     });
 
     desviacion = Math.sqrt(desviacion / pokemon.stats.length);
-    if (!document.getElementById(pokemon.id.toString())) {
-        fichaPokemon(pokemon, [total, media, desviacion]);
-    }
+    fichaPokemon(pokemon, [total, media, desviacion]);
+
 }
 
 async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, number]) {
     let main = document.querySelector<HTMLElement>("main")!;
 
-
     let seccionPokemon = document.createElement("section");
-
+    
+    
     seccionPokemon.classList.add("seccionPokemon");
     seccionPokemon.id = pokemon.id.toString();
+
+    let botonEliminar = document.createElement("button");
+    botonEliminar.classList.add("btnEliminar");
+    botonEliminar.innerText = "X";
+    seccionPokemon.appendChild(botonEliminar);
+
+    botonEliminar.onclick =  () => {
+        console.log(listaPokemon);
+        seccionPokemon.remove();
+        listaPokemon.splice(listaPokemon.indexOf(pokemon.id), 1);
+        console.log(listaPokemon);
+    }
 
     let imagen = document.createElement("img")
     let seccionTipos = document.createElement("section");
@@ -105,7 +130,7 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
 
 
     pokemon.stats.forEach((val) => {
-        anyadirEstadistica(seccionEstadistica, val);
+        anyadirEstadistica(seccionEstadistica, val, pokemon.types[0].type.name);
     });
 
     let stGenerales = document.createElement("section");
@@ -238,7 +263,7 @@ function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]
     return debilidadesAgrupadas;
 }
 
-function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: PokemonStat) {
+function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: PokemonStat, tipo: string) {
     let stElement = document.createElement("section");
     elementoContenedor.appendChild(stElement);
 
@@ -253,6 +278,7 @@ function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: Pokemo
 
     stElement.classList.add("estadistica");
     stPorcentaje.classList.add("barra_estadistica");
+    stPorcentaje.classList.add(estadistica.stat.name);
 
     let stSpan = document.createElement("span");
     stPorcentaje.appendChild(stSpan);
@@ -260,10 +286,25 @@ function anyadirEstadistica(elementoContenedor: HTMLElement, estadistica: Pokemo
     let porcentajeAltura = (estadistica.base_stat * 100 / 255);
     stSpan.style.height = porcentajeAltura + "%";
     stSpan.style.top = (100 - porcentajeAltura) + "%";
+    stSpan.classList.add(tipo);
     stValor.innerText = estadistica.base_stat.toString();
     stTitulo.innerText = abreviaturas_stats[estadistica.stat.name];
     stTitulo.title = traduccion_stats[estadistica.stat.name];
 
+    let spanList: NodeListOf<HTMLSpanElement>;
+
+    stPorcentaje.onmouseenter = () => {
+        spanList = document.querySelectorAll<HTMLSpanElement>(`.barra_estadistica:not(.${estadistica.stat.name}) span`);
+        spanList.forEach(element => {
+            element.style.backgroundColor = "grey";
+        });
+    };
+
+    stPorcentaje.onmouseleave = () => {
+        spanList.forEach(element => {
+            element.style.backgroundColor = "";
+        });
+    }
 }
 
 async function crearImagen(arrayImagen: number[], imagen: HTMLImageElement) {

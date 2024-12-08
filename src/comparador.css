@@ -1,0 +1,147 @@
+@import "/src/root.css";
+
+.seccionPokemon {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+}
+
+.seccionPokemon hr {
+    width: 100%;
+    color: brown;
+}
+
+.seccionTipos {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+}
+
+.estadistica {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+}
+
+.valor {
+    font-size: 12px;
+    text-align: center;
+}
+
+.stTitulo {
+    text-align: center;
+    font-size: 12px;
+}
+
+.stGenerales {
+    display: grid;
+    grid-template-areas:
+        "a b"
+        "c c";
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.stGenerales :nth-last-child(1) {
+    grid-area: c;
+}
+
+.barra_estadistica {
+    width: 20px;
+    height: 200px;
+    background-color: rgba(0, 0, 0, 0.212);
+}
+
+.barra_estadistica span {
+    display: block;
+    position: relative;
+    width: 100%;
+}
+
+
+
+.secDebilidades {
+    border-left: 5px solid;
+    /* margin-left: -2px; */
+}
+
+.secDebilidades>section {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    gap: 5px;
+}
+
+.secDebilidades>h4 {
+    background-color: rgb(var(--color));
+    font-size: small;
+    margin: 0 0 5px;
+
+}
+
+.secSE,
+.secEfec {
+    margin-top: 15px;
+    --color: 245, 84, 84;
+    background-color: rgba(var(--color), 0.10);
+    border-color: rgb(var(--color));
+}
+
+.secNor {
+    margin-top: 15px;
+    --color: 203, 203, 203;
+    background-color: rgba(var(--color), 0.10);
+    border-color: rgb(var(--color));
+}
+
+.secRes,
+.secSR {
+    margin-top: 15px;
+    --color: 0, 99, 0;
+    background-color: rgba(var(--color), 0.10);
+    border-color: rgb(var(--color));
+}
+
+.secInm {
+    margin-top: 15px;
+    --color: 56, 154, 253;
+    background-color: rgba(var(--color), 0.10);
+    border-color: rgb(var(--color));
+}
+
+.btnEliminar {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    text-align: center;
+    align-self: flex-end;
+    margin-right: 15px;
+    background-color: transparent;
+    border: 0;
+}
+
+.btnEliminar {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    text-align: center;
+    align-self: flex-end;
+    margin-right: 15px;
+    background-color: transparent;
+    border: 0;
+}
+
+main {
+    margin-top: 15px;
+    display: grid;
+    justify-content: center;
+    justify-items: center;
+}
+
+
+@media (prefers-color-scheme: dark) {
+    .btnEliminar {
+        color: #f6f6f6;
+    }
+}

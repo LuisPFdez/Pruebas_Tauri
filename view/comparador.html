@@ -6,96 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparador</title>
     <script type="module" src="/src/comparador.ts"></script>
-    <link rel="stylesheet" href="/src/styles.css">
-    <style>
-        .seccionPokemon {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .seccionPokemon hr {
-            width: 100%;
-            color: brown;
-        }
-
-        .estadistica {
-            display: flex;
-            flex-direction: column;
-            padding: 5px;
-        }
-
-        .valor {
-            font-size: 12px;
-            text-align: center;
-        }
-
-        .stTitulo {
-            text-align: center;
-            font-size: 12px;
-        }
-
-        .stGenerales {
-            display: grid;
-            grid-template-areas:
-                "a b"
-                "c c";
-            font-size: 14px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .stGenerales :nth-last-child(1) {
-            grid-area: c;
-        }
-
-        .barra_estadistica {
-            width: 20px;
-            height: 200px;
-            background-color: rgba(0, 0, 0, 0.212);
-        }
-
-        .barra_estadistica span {
-            display: block;
-            position: relative;
-            width: 100%;
-            background-color: darksalmon;
-        }
-
-        .superEfectivo {
-            background-color: red;
-        }
-
-        .efectivo {
-            background-color: brown;
-        }
-
-        .normal {
-            background-color: grey;
-        }
-
-        .resistente {
-            background-color: green;
-        }
-
-        .superResistente {
-            background-color: darkgreen;
-        }
-
-        main {
-            margin-top: 15px;
-            display: grid;
-            justify-content: center;
-            justify-items: center;
-        }
-    </style>
+    <script src="/src/components/header-busqueda.ts "></script>
+    <link rel="stylesheet" href="/src/comparador.css">
+    <link rel="stylesheet" href="/src/components/cuadro-tipos.css">
 </head>
 
 <body>
-
-    <header id="busqueda">
-        <input type="text" id="cuadro_busqueda">
-        <button id="boton_busqueda"><span>&#x21B5;</span></button>
-    </header>
+    <header-busqueda id="hBusqueda"></header-busqueda>
 
     <main>
 
