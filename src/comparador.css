@@ -82,14 +82,12 @@
 
 .secSE,
 .secEfec {
-    margin-top: 15px;
     --color: 245, 84, 84;
     background-color: rgba(var(--color), 0.10);
     border-color: rgb(var(--color));
 }
 
 .secNor {
-    margin-top: 15px;
     --color: 203, 203, 203;
     background-color: rgba(var(--color), 0.10);
     border-color: rgb(var(--color));
@@ -97,14 +95,12 @@
 
 .secRes,
 .secSR {
-    margin-top: 15px;
     --color: 0, 99, 0;
     background-color: rgba(var(--color), 0.10);
     border-color: rgb(var(--color));
 }
 
 .secInm {
-    margin-top: 15px;
     --color: 56, 154, 253;
     background-color: rgba(var(--color), 0.10);
     border-color: rgb(var(--color));

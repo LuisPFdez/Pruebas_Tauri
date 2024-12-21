@@ -103,10 +103,8 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     seccionPokemon.appendChild(botonEliminar);
 
     botonEliminar.onclick =  () => {
-        console.log(listaPokemon);
         seccionPokemon.remove();
         listaPokemon.splice(listaPokemon.indexOf(pokemon.id), 1);
-        console.log(listaPokemon);
     }
 
     let imagen = document.createElement("img")
@@ -182,6 +180,7 @@ function mostrarDebilidades(debilidades: TypeRelations[], seccionResistencias: H
         seccionResistencias.appendChild(crearSeccionResistencias(clasesDebilidades[clave], valores));
     })
 
+
 }
 
 function crearSeccionResistencias(clase: [string, string], valores: string[]): HTMLElement {
@@ -201,6 +200,7 @@ function crearSeccionResistencias(clase: [string, string], valores: string[]): H
     return element;
 }
 
+//Codigo inspirado de https://github.com/yashrajbharti/Pokemon-Type-Weakness-Calculator/blob/main/script.js
 function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]> {
     let objectToMap = (debilidad: TypeRelations, mapaDebilidad: mapaDebilidades) => {
         debilidad.double_damage_from.map((val) => {
@@ -227,7 +227,6 @@ function calcularDebilidades(debilidades: TypeRelations[]): Map<number, string[]
     let debilidadesFinal: mapaDebilidades = new Map();
     let tipos = Object.keys(tipos_pokemon);
 
-    //https://github.com/yashrajbharti/Pokemon-Type-Weakness-Calculator/blob/main/script.js
     if (debilidades.length == 2) {
         let deb1 = debilidades[0];
         let deb2 = debilidades[1];
