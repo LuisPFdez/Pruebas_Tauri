@@ -92,8 +92,8 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     let main = document.querySelector<HTMLElement>("main")!;
 
     let seccionPokemon = document.createElement("section");
-    
-    
+    let h3 = document.createElement("h3");
+
     seccionPokemon.classList.add("seccionPokemon");
     seccionPokemon.id = pokemon.id.toString();
 
@@ -102,7 +102,7 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     botonEliminar.innerText = "X";
     seccionPokemon.appendChild(botonEliminar);
 
-    botonEliminar.onclick =  () => {
+    botonEliminar.onclick = () => {
         seccionPokemon.remove();
         listaPokemon.splice(listaPokemon.indexOf(pokemon.id), 1);
     }
@@ -116,10 +116,12 @@ async function fichaPokemon(pokemon: Pokemon, estadisticas: [number, number, num
     seccionGeneral.appendChild(seccionTipos);
     imagen.style.margin = "auto";
 
-    if (arrayImagen == undefined) {
-        let arrayImagen = await arrayFromURL(pokemon.sprites.front_default);
-        await crearImagen(arrayImagen, imagen);
+    if (arrayImagen == undefined) { 
+        arrayImagen = await arrayFromURL(pokemon.sprites.front_default);
     }
+
+    await crearImagen(arrayImagen, imagen);
+    arrayImagen = undefined;
 
     let seccionEstadistica = document.createElement("section");
     seccionPokemon.appendChild(seccionEstadistica);
